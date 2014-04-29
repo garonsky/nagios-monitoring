@@ -489,6 +489,38 @@ int main(int argc, char *argv[])
             std::cout << "Generating nrpe client command config --> " << strOutputPath.str();
             std::flush(std::cout);
         }
+        else if (bGenerateServiceAndHost^bGenerateHostGroup == false)
+        {
+            std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service)\n";
+            return 0;
+        }
+        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false)
+        {
+            std::cout << "Nothing to generate! (-hostgroup xor -service)\n";
+            return 0;
+        }
+        else if (bGenerateHostGroup == true)
+        {
+            std::cout << "Generating hostgroup --> " << strOutputPath.str();
+            std::flush(std::cout);
+
+            if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            {
+                std::cout << "\nError generating configuration!. Verify input.\n";
+                return 0;
+            }
+        }
+        else if (bGenerateServiceAndHost == true)
+        {
+            std::cout << "Generating service and host config --> " << strOutputPath.str();
+            std::flush(std::cout);
+
+            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            {
+                std::cout << "\nError generating service and host configuration!. Verify input.\n";
+                return 0;
+            }
+        }
 
         std::cout << "\nDone!\n";
     }
