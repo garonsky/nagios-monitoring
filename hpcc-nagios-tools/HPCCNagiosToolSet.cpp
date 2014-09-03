@@ -15,6 +15,9 @@ const char *P_ROXIE("roxie");
 const char *P_DAFILESRV("dafilesrv");
 
 static bool bDoLookUp = true;
+bool CHPCCNagiosToolSet::m_retryHostNameLoookUp = false;
+bool CHPCCNagiosToolSet::m_bUseNPRE = false;
+char CHPCCNagiosToolSet::m_pNRPE[64] = {""};
 
 class CHPCCNagiosHostEventForSSH : public CHPCCNagiosHostEvent
 {
@@ -31,8 +34,13 @@ public:
         else
         {
             m_pStrBuffer->append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).append("check for ssh connectivity")\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_SSH_SERVICE).append(P_NAGIOS_SEPERATOR)\
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_SSH_SERVICE);
+
+            if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+            {
+                m_pStrBuffer->append(P_NAGIOS_SEPERATOR)\
                     .append(CHPCCNagiosHostEventForSSH::m_nTimeOut).append(P_NAGIOS_SERVICE_CONFIG_5);
+            }
 
             m_pStrBuffer->append("\n");
         }
@@ -129,7 +137,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -228,7 +236,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 if (strcmp(pch, pHostName) == 0)
                 {
                     pch = strtok(NULL, ",\n");
@@ -357,6 +365,11 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
         nCount++;
     }
 
+    if (CHPCCNagiosToolSet::m_bUseNPRE == true)
+    {
+        strncpy(CHPCCNagiosToolSet::m_pNRPE, P_CHECK_NRPE, sizeof(CHPCCNagiosToolSet::m_pNRPE));
+    }
+
     CHPCCNagiosToolSet::generateNagiosEspServiceConfig(strServiceConfig, pEnvXML, pConfigGenPath);
     CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
     CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
@@ -432,32 +445,6 @@ bool CHPCCNagiosToolSet::getConfigGenOutput(const char* pEnvXML, const char* pCo
 
 bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strServiceConfig, const char* pEnvXML, const char* pConfigGenPath)
 {
-    /*if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
-
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
-    {
-        return false;
-    }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ESP_SERVICES).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
-
-    CHPCCNagiosToolSet::getConfigGenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());*/
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ESP_SERVICES);
 
     int i = -1;
@@ -517,7 +504,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -533,9 +520,14 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
         {
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2)\
                     .appendf("check for %s service for instance %s of type %s", pServiceName, pProcessName, pProcess)\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_ESP_SERVICE).append( strcmp(pch,P_HTTP) == 0 ? P_HTTP : P_HTTPS).append(P_NAGIOS_SEPERATOR)\
-                    .append(strPort.str()).append(P_NAGIOS_SERVICE_CONFIG_5);
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_ESP_SERVICE).append( strcmp(pch,P_HTTP) == 0 ? P_HTTP : P_HTTPS);
 
+            if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+            {
+                strServiceConfig.append(P_NAGIOS_SEPERATOR).append(strPort.str());
+            }
+
+            strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_5);
             strServiceConfig.append("\n");
         }
 
@@ -612,7 +604,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -627,8 +619,12 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
         else if (nCount % nNumValues == 4)
         {
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s of type %s", pProcessName, pProcess)\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_DALI).append(P_NAGIOS_SEPERATOR)\
-                    .append(strPort.str()).append(P_NAGIOS_SEPERATOR).append(DALI_CHECK_TIMEOUT).append(P_NAGIOS_SERVICE_CONFIG_5);
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_DALI);
+
+            if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+            {
+                strServiceConfig.append(P_NAGIOS_SEPERATOR).append(strPort.str()).append(P_NAGIOS_SEPERATOR).append(DALI_CHECK_TIMEOUT).append(P_NAGIOS_SERVICE_CONFIG_5);
+            }
 
             strServiceConfig.append("\n");
         }
@@ -706,7 +702,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -721,8 +717,12 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
         else if (nCount % nNumValues == 4)
         {
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s of type %s", pProcessName, pProcess)\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_SASHA).append(P_NAGIOS_SEPERATOR)\
-                    .append(strPort.str()).append(P_NAGIOS_SEPERATOR).append(SASHA_CHECK_TIMEOUT).append(P_NAGIOS_SERVICE_CONFIG_5);
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_SASHA);
+
+            if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+            {
+                strServiceConfig.append(P_NAGIOS_SEPERATOR).append(strPort.str()).append(P_NAGIOS_SEPERATOR).append(SASHA_CHECK_TIMEOUT).append(P_NAGIOS_SERVICE_CONFIG_5);
+            }
 
             strServiceConfig.append("\n");
         }
@@ -735,7 +735,6 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
     delete pOutput;
 
     return true;
-
 }
 
 bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strServiceConfig, const char* pEnvXML , const char* pConfigGenPath)
@@ -799,7 +798,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -810,7 +809,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
         else if (nCount % nNumValues == 4)
         {
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s of type %s", pProcessName, pProcess)\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_ROXIE).append(P_NAGIOS_SERVICE_CONFIG_5);
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_ROXIE).append(P_NAGIOS_SERVICE_CONFIG_5);
 
             strServiceConfig.append("\n");
         }
@@ -859,7 +858,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -873,10 +872,14 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             {
                 // processes
                 strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s", P_CHECK_PROCS)\
-                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_PROCS)\
-                        .append(P_NAGIOS_SEPERATOR).append(TOTAL_PROCS_WARNING)\
+                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_PROCS);
+
+                if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+                {
+                    strServiceConfig.append(P_NAGIOS_SEPERATOR).append(TOTAL_PROCS_WARNING)\
                         .append(P_NAGIOS_SEPERATOR).append(TOTAL_PROCS_CRITICAL)\
                         .append(P_NAGIOS_SERVICE_CONFIG_5);
+                }
                 strServiceConfig.append("\n");
             }
 
@@ -884,10 +887,14 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             {
                 // disk space
                 strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s", P_CHECK_DISK_SPACE)\
-                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_DISK_SPACE)\
-                        .append(P_NAGIOS_SEPERATOR).append(DISK_SPACE_PERCENTAGE_WARNING)\
-                        .append(P_NAGIOS_SEPERATOR).append(DISK_SPACE_PERCENTAGE_CRITICAL)\
-                        .append(P_NAGIOS_SERVICE_CONFIG_5);
+                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_DISK_SPACE);
+
+                        if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+                        {
+                            strServiceConfig.append(P_NAGIOS_SEPERATOR).append(DISK_SPACE_PERCENTAGE_WARNING)\
+                                .append(P_NAGIOS_SEPERATOR).append(DISK_SPACE_PERCENTAGE_CRITICAL)\
+                                .append(P_NAGIOS_SERVICE_CONFIG_5);
+                        }
                 strServiceConfig.append("\n");
             }
 
@@ -895,10 +902,15 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             {
                 // number of users
                 strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s", P_CHECK_USERS)\
-                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_USERS)\
-                        .append(P_NAGIOS_SEPERATOR).append(USER_NUMBER_WARNING)\
+                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_USERS);
+
+                if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+                {
+                    strServiceConfig.append(P_NAGIOS_SEPERATOR).append(USER_NUMBER_WARNING)\
                         .append(P_NAGIOS_SEPERATOR).append(USER_NUMBER_CRITICAL)\
                         .append(P_NAGIOS_SERVICE_CONFIG_5);
+                }
+
                 strServiceConfig.append("\n");
             }
 
@@ -906,14 +918,18 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             {
                 // system load
                 strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s", P_CHECK_LOAD)\
-                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_LOAD)\
-                        .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD1_WARN)\
+                        .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_LOAD);
+
+                if (CHPCCNagiosToolSet::m_bUseNPRE == false)
+                {
+                    strServiceConfig.append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD1_WARN)\
                         .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD5_WARN)\
                         .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD15_WARN)\
                         .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD1_CRITICAL)\
                         .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD5_CRITICAL)\
                         .append(P_NAGIOS_SEPERATOR).append(SYSTEM_LOAD15_CRITICAL)\
                         .append(P_NAGIOS_SERVICE_CONFIG_5);
+                }
                 strServiceConfig.append("\n");
             }
         }
@@ -990,7 +1006,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 
             if (hp == NULL)
             {
-                bDoLookUp = false;
+                bDoLookUp =  m_retryHostNameLoookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1001,7 +1017,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
         else if (nCount % nNumValues == 4)
         {
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_1).append(pHostName).append(P_NAGIOS_SERVICE_CONFIG_2).appendf("check for %s of type %s", pProcessName, pProcess)\
-                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(P_CHECK_DAFILESRV)\
+                    .append(P_NAGIOS_SERVICE_CONFIG_3).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_DAFILESRV)\
                     .append(P_NAGIOS_SERVICE_CONFIG_5);
 
             strServiceConfig.append("\n");

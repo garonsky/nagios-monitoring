@@ -34,6 +34,11 @@ protected:
 class CHPCCNagiosToolSet
 {
 public:
+
+    static bool m_retryHostNameLoookUp;
+    static bool m_bUseNPRE;
+    static char m_pNRPE[64];
+
     static bool generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateClientNRPEConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);

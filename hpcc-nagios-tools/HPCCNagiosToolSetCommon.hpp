@@ -21,7 +21,7 @@ const float SYSTEM_LOAD1_CRITICAL           = 10.0;
 const float SYSTEM_LOAD5_CRITICAL           = 6.0;
 const float SYSTEM_LOAD15_CRITICAL          = 4.0;
 
-
+static const char *P_CHECK_NRPE("check_nrpe!");
 static const char *P_CHECK_NRPE_1_ARG("check_nrpe_1_arg!");
 static const char *P_CHECK_NRPE_2_ARG("check_nrpe_2_arg!");
 
