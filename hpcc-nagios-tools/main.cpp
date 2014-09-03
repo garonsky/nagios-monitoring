@@ -9,8 +9,11 @@ Usage: hpcc-nagios-tools -env <environment file> -out <output path> [options]\n"
     std::cout << "  -c or -cfggen     : The path to the configgen.  (Default: /opt/HPCCSystems/sbin/configgen)\n";
     std::cout << "  -g or -hostgroup  : generate host group file\n";
     std::cout << "  -s or -service    : generate service and host file\n";
+    std::cout << "  -p or -nrpe       : generate client plugin cfgs for nrpe\n";
     std::cout << "  -e or -env        : hpcc environment configuration file (Default: /etc/HPCCSystems/environment.xml)\n";
     std::cout << "  -o or -output     : outpfile where the generated configuration will be written\n";
+    std::cout << "  Advanced Options (when using -nrpe) :\n";
+    //std::cout << "
 }
 
 int main(int argc, char *argv[])
@@ -19,8 +22,9 @@ int main(int argc, char *argv[])
     StringBuffer strConfigGenPath;
     StringBuffer strOutputPath;
     StringBuffer strEnvFilePath;
-    bool bGenerateHostGroup = false;
-    bool bGenerateServiceAndHost   = false;
+    bool bGenerateHostGroup         = false;
+    bool bGenerateServiceAndHost    = false;
+    bool bGenerateNRPECommands      = false;
 
     if (argc == 1)
     {
@@ -48,6 +52,11 @@ int main(int argc, char *argv[])
         {
             bGenerateServiceAndHost = true;
         }
+        else if (stricmp(argv[i], "-p") == 0 || stricmp(argv[i], "-nrpe") == 0)
+        {
+            i++;
+            bGenerateNRPECommands = true;
+        }
         else if (stricmp(argv[i], "-o") == 0 || stricmp(argv[i], "-output") == 0 || stricmp(argv[i], "-out") == 0)
         {
             i++;
@@ -69,14 +78,14 @@ int main(int argc, char *argv[])
             std::cout << "Missing output file path! (-output)\n";
             return 0;
         }
-        else if (bGenerateServiceAndHost^bGenerateHostGroup == false)
+        else if ( (bGenerateServiceAndHost^bGenerateHostGroup^bGenerateNRPECommands) == false)
         {
-            std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service)\n";
+            std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service xor -nrpe)\n";
             return 0;
         }
-        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false)
+        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false && bGenerateNRPECommands == false)
         {
-            std::cout << "Nothing to generate! (-hostgroup xor -service)\n";
+            std::cout << "Nothing to generate! (-hostgroup xor -service xor -nrpe)\n";
             return 0;
         }
         else if (bGenerateHostGroup == true)
@@ -100,6 +109,13 @@ int main(int argc, char *argv[])
                 std::cout << "\nError generating service and host configuration!. Verify input.\n";
                 return 0;
             }
+        }
+        else if (bGenerateNRPECommands == true)
+        {
+            std::cout << "Generating nrpe client command config --> " << strOutputPath.str();
+            std::flush(std::cout);
+
+            //if ()
         }
 
         std::cout << "\nDone!\n";

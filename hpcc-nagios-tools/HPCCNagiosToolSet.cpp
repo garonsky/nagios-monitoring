@@ -71,48 +71,42 @@ protected:
     }
 };
 
+class CHPCCNagiosNRPEClientEventConfig : public CHPCCNagiosHostEvent
+{
+public:
+    CHPCCNagiosNRPEClientEventConfig(StringBuffer *pStrBuffer) : CHPCCNagiosHostEvent(pStrBuffer)
+    {
+    }
+    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken)
+    {
+        if (pHostName == NULL || *pHostName == 0)
+        {
+            return;
+        }
+        else
+        {
+            m_pStrBuffer->append(P_NAGIOS_HOST_CONFIG_1).append(pHostName).append(P_NAGIOS_HOST_CONFIG_2).append(pHostName).append(" ")\
+                    .append(idx).append(P_NAGIOS_HOST_CONFIG_3).append(pToken).append(P_NAGIOS_HOST_CONFIG_4);
+            m_pStrBuffer->append("\n");
+        }
+    }
+protected:
+    CHPCCNagiosNRPEClientEventConfig()
+    {
+    }
+};
+
+
 const int CHPCCNagiosHostEventForSSH::m_nTimeOut = 10;
 
 bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0 || checkFileExists(pConfigGenPath) == false)
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_MACHINES);
+
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_MACHINES).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
-
-    FILE *fp = popen(strConfiggenCmdLine.str(), "r");
-
-    if (fp == NULL)
-    {
-        return false;
-    }
-
-    int nCharacter = -1;
-    CFileInputStream cfgInputStream(fileno(fp));
-
-    memBuff.clear();
-
-    do
-    {
-        nCharacter = cfgInputStream.readNext();
-
-        memBuff.append(static_cast<unsigned char>(nCharacter));
-    }
-    while(nCharacter != -1);
-
-    memBuff.append('\0');
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    strOutput.replace('\377',',');
-
-    char *pOutput = strdup(strOutput.str());
 
     int nCount = 0;
 
@@ -143,7 +137,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
                 strcpy(pHostName,hp->h_name);
             }
 
-            evHost.onHostEvent(pHostName, i,pch);
+            evHost.onHostEvent(pHostName, i, pch);
 
             struct NodeName nm;
 
@@ -159,34 +153,24 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
         nCount++;
     }
 
-    delete pOutput;
+    free(pOutput);
 
     return true;
 }
 
 bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
-
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
     if (pOutputFilePath == NULL || *pOutputFilePath == 0 || checkFileExists(pConfigGenPath) == false)
     {
         return false;
     }
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
 
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
+    if (pOutput == NULL)
+    {
+        return false;
+    }
 
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
 
     OwnedIFile outputFile = createIFile(pOutputFilePath);
     OwnedIFileIO io = outputFile->open(IFOcreaterw);
@@ -195,12 +179,6 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
     {
         return false;
     }
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-    strOutput.replaceString(",\n",",X\n"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int nCount = 0;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -300,42 +278,33 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
     io->write(0, strHostConfig.length(), strHostConfig.str());
     io->close();
 
-    delete pOutput;
+    free(pOutput);
 
     return true;
 }
 
+bool CHPCCNagiosToolSet::generateNagiosNRPEClientConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML, const char* pConfigGenPath)
+{
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
+
+    free(pOutput);
+}
+
 bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
-    const int nNumValues = 6;
-
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
-
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (pOutputFilePath == NULL || *pOutputFilePath == 0 || checkFileExists(pConfigGenPath) == false)
+    if (pOutputFilePath == NULL || *pOutputFilePath == 0)
     {
         return false;
     }
 
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
 
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
+    if (pOutput == NULL)
+    {
+        return false;
+    }
 
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine, memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
-
+    const int nNumValues = 6;
     int nCount = 0;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
 
@@ -402,11 +371,25 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
     io->write(0, strServiceConfig.length(), strServiceConfig.str());
     io->close();
 
-    delete pOutput;
+    free(pOutput);
     return true;
 }
 
-bool CHPCCNagiosToolSet::getConfiggenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, MemoryBuffer &memBuff)
+bool CHPCCNagiosToolSet::generateClientNRPEConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
+{
+    if (pOutputFilePath == NULL || *pOutputFilePath == 0 || checkFileExists(pConfigGenPath) == false)
+    {
+        return false;
+    }
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
+
+    if (pOutput == NULL)
+    {
+        return false;
+    }
+}
+
+bool CHPCCNagiosToolSet::getConfigGenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, MemoryBuffer &memBuff)
 {
     if (pConfigGenPath == NULL || *pConfigGenPath == 0)
     {
@@ -430,12 +413,17 @@ bool CHPCCNagiosToolSet::getConfiggenOutput(const char* pEnvXML, const char* pCo
 
     memBuff.clear();
 
-    do
+    while (1)
     {
         nCharacter = cfgInputStream.readNext();
+
+        if (nCharacter == -1)
+        {
+            break;
+        }
         memBuff.append(static_cast<unsigned char>(nCharacter));
     }
-    while(nCharacter != -1);
+    //while(nCharacter != -1);
 
     memBuff.append('\0');
 
@@ -444,7 +432,7 @@ bool CHPCCNagiosToolSet::getConfiggenOutput(const char* pEnvXML, const char* pCo
 
 bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strServiceConfig, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
+    /*if (pConfigGenPath == NULL || *pConfigGenPath == 0)
     {
         pConfigGenPath = PCONFIGGEN_PATH;
     }
@@ -464,12 +452,13 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
 
     strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ESP_SERVICES).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
 
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
+    CHPCCNagiosToolSet::getConfigGenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
 
     StringBuffer strOutput(memBuff.toByteArray());
     strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
 
-    char *pOutput = strdup(strOutput.str());
+    char *pOutput = strdup(strOutput.str());*/
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ESP_SERVICES);
 
     int i = -1;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -555,8 +544,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
         nCount++;
     }
 
-
-    delete pOutput;
+    free(pOutput);
 
     return true;
 }
@@ -565,32 +553,12 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
 {
     const int nNumValues = 5;
 
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_DALI);
 
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML).append(P_BY_TYPE).append(P_DALI);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int i = -1;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -670,7 +638,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
         nCount++;
     }
 
-    delete pOutput;
+    free(pOutput);
 
     return true;
 }
@@ -679,32 +647,12 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 {
     const int nNumValues = 5;
 
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_SASHA);
 
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML).append(P_BY_TYPE).append(P_SASHA);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int i = -1;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -793,33 +741,12 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strServiceConfig, const char* pEnvXML , const char* pConfigGenPath)
 {
     const int nNumValues = 5;
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_ROXIE);
 
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
-
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML).append(P_BY_TYPE).append(P_ROXIE);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int i = -1;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -902,33 +829,12 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                                                          bool bGenCheckProcs, bool bGenCheckDisk, bool bGenCheckUsers,bool bGenCheckLoad)
 {
     const int nNumValues = 5;
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_ROXIE);
 
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
-
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML).append(P_BY_TYPE).append(P_ROXIE);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int i = -1;
     int nCount = 0;
@@ -1026,32 +932,12 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 {
     const int nNumValues = 5;
 
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
-    {
-        pConfigGenPath = PCONFIGGEN_PATH;
-    }
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_DAFILESRV);
 
-    if (pEnvXML == NULL || *pEnvXML == 0)
-    {
-        pEnvXML = PENV_XML;
-    }
-
-    if (checkFileExists(pConfigGenPath) == false)
+    if (pOutput == NULL)
     {
         return false;
     }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_LIST_ALL).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML).append(P_BY_TYPE).append(P_DAFILESRV);
-
-    CHPCCNagiosToolSet::getConfiggenOutput(pEnvXML, pConfigGenPath, strConfiggenCmdLine.str(), memBuff);
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int i = -1;
     char pProcess[DEFAULT_BUFFER_SIZE] = "";
@@ -1126,7 +1012,49 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
         nCount++;
     }
 
-    delete pOutput;
+    free(pOutput);
 
     return true;
+}
+
+char* CHPCCNagiosToolSet::invokeConfigGen(const char* pEnvXML, const char* pConfigGenPath, const char *pCmd, const char *pType)
+{
+    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
+    {
+        pConfigGenPath = PCONFIGGEN_PATH;
+    }
+
+    if (pEnvXML == NULL || *pEnvXML == 0)
+    {
+        pEnvXML = PENV_XML;
+    }
+
+    if (checkFileExists(pConfigGenPath) == false || pCmd == NULL || *pCmd == 0)
+    {
+        return NULL;
+    }
+
+    MemoryBuffer memBuff;
+    StringBuffer strConfigGenCmdLine(pConfigGenPath);
+
+    strConfigGenCmdLine.append(pCmd).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
+
+    if (pType != NULL && *pType != 0)
+    {
+        strConfigGenCmdLine.append(P_BY_TYPE).append(pType);
+    }
+
+    CHPCCNagiosToolSet::getConfigGenOutput(pEnvXML, pConfigGenPath, strConfigGenCmdLine.str(), memBuff);
+
+    StringBuffer strOutput(memBuff.toByteArray());
+    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
+
+    if (pType == NULL || *pType == 0)
+    {
+        strOutput.replaceString(",\n",",X\n"); // sttrok pecularity with adjacent delimiters
+    }
+
+    char *pOutput = strdup(strOutput.str());
+
+    return pOutput;
 }

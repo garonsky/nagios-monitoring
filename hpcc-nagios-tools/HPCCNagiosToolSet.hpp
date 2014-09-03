@@ -36,6 +36,7 @@ class CHPCCNagiosToolSet
 public:
     static bool generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateClientNRPEConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
 
 protected:
 
@@ -48,7 +49,12 @@ protected:
                                                     bool bGenCheckProcs = bDefaultCheckProcs, bool bGenCheckDisk = bDefaultCheckDisk,\
                                                     bool bGenCheckUsers = bDefaultCheckUsers, bool bCheckLoad = bDefaultCheckLoad);
     static bool generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
-    static bool getConfiggenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, MemoryBuffer &memBuff);
+    static bool generateNagiosNRPEClientConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+
+private:
+
+    static char* invokeConfigGen(const char* pEnvXML, const char* pConfigGenPath, const char *pCmd = P_CONFIGGEN_PARAM_LIST_ALL, const char *pType = NULL);
+    static bool getConfigGenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, MemoryBuffer &memBuff);
 };
 
 #endif // _HPCC_NAGIOSTOOLSET_HPP_
