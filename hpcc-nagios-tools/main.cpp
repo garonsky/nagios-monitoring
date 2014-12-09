@@ -10,10 +10,10 @@ Usage: hpcc-nagios-tools -env <environment file> -out <output path> [options]\n"
     std::cout << "  -g or -hostgroup  : generate host group file\n";
     std::cout << "  -s or -service    : generate service and host file\n";
     std::cout << "  -p or -nrpe       : generate client plugin cfgs for nrpe\n";
-    std::cout << "  -m or -commands   : generate nrpe command config";
+    std::cout << "  -m or -commands   : generate nrpe command config\n";
     std::cout << "  -e or -env        : hpcc environment configuration file (Default: /etc/HPCCSystems/environment.xml)\n";
     std::cout << "  -o or -output     : outpfile where the generated configuration will be written\n";
-    std::cout << "  -r or -retry      : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)";
+    std::cout << "  -r or -retry      : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
     std::cout << "Advanced Options (when using -nrpe) :\n";
     //std::cout << "
 }
@@ -56,7 +56,6 @@ int main(int argc, char *argv[])
         }
         else if (stricmp(argv[i], "-p") == 0 || stricmp(argv[i], "-nrpe") == 0)
         {
-            i++;
             CHPCCNagiosToolSet::m_bUseNPRE = true;
         }
         else if (stricmp(argv[i], "-o") == 0 || stricmp(argv[i], "-output") == 0 || stricmp(argv[i], "-out") == 0)
@@ -88,7 +87,7 @@ int main(int argc, char *argv[])
             std::cout << "Missing output file path! (-output)\n";
             return 0;
         }
-        else if ( (bGenerateServiceAndHost^bGenerateHostGroup^bGenerateNRPECommands) == false)
+        else if ( bGenerateServiceAndHost + bGenerateHostGroup + bGenerateNRPECommands != 1) //(bGenerateServiceAndHost^bGenerateHostGroup)^bGenerateNRPECommands) == false)
         {
             std::cout << "Select one (1) type of config per invocation (e.g. -hostgroup xor -service xor -nrpe)\n";
             return 0;
