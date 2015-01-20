@@ -121,100 +121,7 @@ protected:
     }
 };
 
-const int CHPCCNagiosHostEventForSSH::m_nTimeOut = 10;
-
-bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML, const char* pConfigGenPath)
-{
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0 || checkFileExists(pConfigGenPath) == false)
-    {
-        return false;
-    }
-
-    MemoryBuffer memBuff;
-    StringBuffer strConfiggenCmdLine(pConfigGenPath);
-
-    strConfiggenCmdLine.append(P_CONFIGGEN_PARAM_MACHINES).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
-
-    FILE *fp = popen(strConfiggenCmdLine.str(), "r");
-
-    if (fp == NULL)
-    {
-        return false;
-    }
-
-    int nCharacter = -1;
-    CFileInputStream cfgInputStream(fileno(fp));
-
-    memBuff.clear();
-
-    do
-    {
-        nCharacter = cfgInputStream.readNext();
-
-        memBuff.append(static_cast<unsigned char>(nCharacter));
-    }
-    while(nCharacter != -1);
-
-    memBuff.append('\0');
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-
-    strOutput.replace('\377',',');
-
-    char *pOutput = strdup(strOutput.str());
-
-    int nCount = 0;
-
-    char *pch = NULL;
-    pch = strtok(pOutput, ",\n");
-
-    int i = 0;
-    while (pch != NULL)
-    {
-        if (nCount % 2 ==  0) // Process name
-        {
-            char pHostName[DEFAULT_BUFFER_SIZE] = "";
-            struct hostent* hp = NULL;
-
-            if (bDoLookUp == true)
-            {
-                unsigned int addr = inet_addr(pch);
-                hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
-            }
-
-            if (hp == NULL)
-            {
-                bDoLookUp = false;
-                strcpy(pHostName, pch);
-            }
-            else
-            {
-                strcpy(pHostName,hp->h_name);
-            }
-
-            evHost.onHostEvent(pHostName, i,pch);
-
-            struct NodeName nm;
-
-            nm.strHostName.set(pHostName);
-            nm.strHostAlias.setf("%s %d", pHostName, i);
-            mapIPtoHostName.setValue(pch, nm);
-
-            i++;
-        }
-
-        pch = strtok(NULL, ",\n");
-
-        nCount++;
-    }
-
-    delete pOutput[];
-
-    return true;
-}
-
-bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
+class CHPCCNagiosNRPEClientEventConfig : public CHPCCNagiosHostEvent
 {
 public:
     CHPCCNagiosNRPEClientEventConfig(StringBuffer *pStrBuffer) : CHPCCNagiosHostEvent(pStrBuffer)
@@ -333,12 +240,6 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
     {
         return false;
     }
-
-    StringBuffer strOutput(memBuff.toByteArray());
-    strOutput.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
-    strOutput.replaceString(",\n",",X\n"); // sttrok pecularity with adjacent delimiters
-
-    char *pOutput = strdup(strOutput.str());
 
     int nCount = 0;
     char pProcess[BUFFER_SIZE_3] = "";
@@ -727,7 +628,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
         {
             if (*pch != 0 && strcmp(pch, XML_TAG_DALISERVERPROCESS) != 0)
             {
-                delete pOutput[];
+                delete pOutput;
                 return false;  // expecting only Dali
             }
             else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
@@ -825,7 +726,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
         {
             if (*pch != 0 && strcmp(pch, XML_TAG_SASHA_SERVER_PROCESS) != 0)
             {
-                delete pOutput[];
+                delete pOutput;
                 return false;  // expecting only sasha
             }
             else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
@@ -891,7 +792,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
         nCount++;
     }
 
-    delete pOutput[];
+    delete pOutput;
 
     return true;
 }
@@ -921,7 +822,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
         {
             if (*pch != 0 && strcmp(pch, XML_TAG_ROXIE_SERVER) != 0)
             {
-                delete pOutput[];
+                delete pOutput;
                 return false;  // expecting only roxie
             }
             else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
@@ -978,7 +879,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
         nCount++;
     }
 
-    delete pOutput[];
+    delete pOutput;
 
     return true;
 }
@@ -1092,7 +993,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
         nCount++;
     }
 
-    delete pOutput[];
+    delete pOutput;
 
     return true;
 }
@@ -1123,7 +1024,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
         {
             if (*pch != 0 && strcmp(pch, XML_TAG_DAFILESERVERPROCESS) != 0)
             {
-                delete pOutput[];
+                delete pOutput;
                 return false;  // expecting only dafilesrvprocess
             }
             else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
