@@ -5,40 +5,44 @@
 void usage()
 {
     std::cout << "HPCC Systems Nagios configuration file generator (version: " << BUILD_VERSION_MAJOR  << "." << BUILD_VERSION_MINOR << "." << BUILD_VERSION_POINT << ")\n\
-Usage: hpcc-nagios-tools -env <environment file> -out <output path> [options]\n\
-Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\$\" -o /etc/nagios3/conf.d/hpcc1services.cfg -s -usernumwarn 10  -usernumcrit 15 -disable_check_all_disks\n\n";
-    std::cout << "  -c or -cfggen <val>     : The path to the configgen.  (Default: /opt/HPCCSystems/sbin/configgen)\n";
-    std::cout << "  -g or -hostgroup        : generate host group file\n";
-    std::cout << "  -s or -service          : generate service and host file\n";
-    std::cout << "  -n or -nrpe             : generate client plugin cfgs for nrpe\n";
-    std::cout << "  -m or -commands         : generate nrpe command config\n";
-    std::cout << "  -e or -env <val>        : hpcc environment configuration file (Default: /etc/HPCCSystems/environment.xml)\n";
-    std::cout << "  -o or -output <val>     : outpfile where the generated configuration will be written\n";
-    std::cout << "  -r or -retry            : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
-    std::cout << "  -u or -user <val>       : macro to use for username for esp server login\n";
-    std::cout << "  -p or -pass <val>       : macro to use for password for esp server login\n";
-    std::cout << "  -attempts <val>         : max host retry attempts   (defaut: " <<  CHPCCNagiosToolSet::m_uMaxCheckAttempts << ")\n";
-    std::cout << "  -sysload1warn <val>     : load1 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad1Warn << ")\n";
-    std::cout << "  -sysload5warn <val>     : load5 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad5Warn << ")\n";
-    std::cout << "  -sysload15warn <val>    : load15 warning threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad15Warn  << ")\n";
-    std::cout << "  -sysload1crit <val>     : load1 critical threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad1Critical << ")\n";
-    std::cout << "  -sysload5crit <val>     : load5 critical threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad5Critical << ")\n";
-    std::cout << "  -sysload15crit <val>    : load15 critical threshold (Default: " << CHPCCNagiosToolSet::m_fSystemLoad15Critical << ")\n";
-    std::cout << "  -diskspacewarn <val>    : disk space % warning threshold  (Default: " << CHPCCNagiosToolSet::m_nDiskSpacePercentageWarning  << ")\n";
-    std::cout << "  -diskspacecrit <val>    : disk space % critical threshold (Default: " << CHPCCNagiosToolSet::m_nDiskSpacePercentageCritical << ")\n";
-    std::cout << "  -usernumwarn <val>      : users logged in warning threshold  (Default: " << CHPCCNagiosToolSet::m_nUserNumberWarning << ")\n";
-    std::cout << "  -usernumcrit <val>      : users logged in critical threshold (Default: " << CHPCCNagiosToolSet::m_nUserNumberCritical << ")\n";
-    std::cout << "  -totalprocswarn <val>   : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
-    std::cout << "  -totalprocscrit <val>   : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
-    std::cout << "  -checkperiod <val>      : host check period (Default: " << CHPCCNagiosToolSet::m_pCheckPeriod << ")\n";
-    std::cout << "  -contacts <val>         : host contacts     (Default: " << CHPCCNagiosToolSet::m_pContacts << ")\n";
-    std::cout << "  -contactgroups <val>    : host contact groups (Default: " << CHPCCNagiosToolSet::m_pContactGroups << ")\n";
-    std::cout << "  -notify_interval <val>  : host contact groups (Default: " << CHPCCNagiosToolSet::m_nNotificationInterval << ")\n";
-    std::cout << "  -notify_period <val>    : host contact groups (Default: " << CHPCCNagiosToolSet::m_pNotificationPeriod << ")\n";
+Usage: hpcc-nagios-tools -env <environment file> -output <output path> [options]\n\
+Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\$\" -o /etc/nagios3/conf.d/hpcc1services.cfg -s -usernumwarn 10  -usernumcrit 15 -disable_check_all_disks\n\
+Usage: hpcc-nagios-tools -out\n";
+    std::cout << "  -c or -cfggen <val>             : The path to the configgen.  (Default: /opt/HPCCSystems/sbin/configgen)\n";
+    std::cout << "  -g or -hostgroup                : generate host group file\n";
+    std::cout << "  -s or -service                  : generate service and host file\n";
+    std::cout << "  -n or -nrpe                     : generate client plugin cfgs for nrpe\n";
+    std::cout << "  -m or -commands                 : generate nrpe command config\n";
+    std::cout << "  -escalations <val>              : generate escalation configuration to push alerts to EclWatch Esp(Default: localhost:8010)\n";
+    std::cout << "  -escalation_commands            : generate escalation command config\n";
+    std::cout << "  -e or -env <val>                : hpcc environment configuration file (Default: /etc/HPCCSystems/environment.xml)\n";
+    std::cout << "  -o or -out or -output <val>     : outpfile where the generated configuration will be written\n";
+    std::cout << "  -r or -retry                    : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
+    std::cout << "  -u or -user <val>               : macro to use for username for esp server login\n";
+    std::cout << "  -p or -pass <val>               : macro to use for password for esp server login\n";
+    std::cout << "  -attempts <val>                 : max host retry attempts   (defaut: " <<  CHPCCNagiosToolSet::m_uMaxCheckAttempts << ")\n";
+    std::cout << "  -sysload1warn <val>             : load1 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad1Warn << ")\n";
+    std::cout << "  -sysload5warn <val>             : load5 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad5Warn << ")\n";
+    std::cout << "  -sysload15warn <val>            : load15 warning threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad15Warn  << ")\n";
+    std::cout << "  -sysload1crit <val>             : load1 critical threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad1Critical << ")\n";
+    std::cout << "  -sysload5crit <val>             : load5 critical threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad5Critical << ")\n";
+    std::cout << "  -sysload15crit <val>            : load15 critical threshold (Default: " << CHPCCNagiosToolSet::m_fSystemLoad15Critical << ")\n";
+    std::cout << "  -diskspacewarn <val>            : disk space % warning threshold  (Default: " << CHPCCNagiosToolSet::m_nDiskSpacePercentageWarning  << ")\n";
+    std::cout << "  -diskspacecrit <val>            : disk space % critical threshold (Default: " << CHPCCNagiosToolSet::m_nDiskSpacePercentageCritical << ")\n";
+    std::cout << "  -usernumwarn <val>              : users logged in warning threshold  (Default: " << CHPCCNagiosToolSet::m_nUserNumberWarning << ")\n";
+    std::cout << "  -usernumcrit <val>              : users logged in critical threshold (Default: " << CHPCCNagiosToolSet::m_nUserNumberCritical << ")\n";
+    std::cout << "  -totalprocswarn <val>           : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
+    std::cout << "  -totalprocscrit <val>           : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
+    std::cout << "  -checkperiod <val>              : host check period (Default: " << CHPCCNagiosToolSet::m_pCheckPeriod << ")\n";
+    std::cout << "  -contacts <val>                 : host contacts     (Default: " << CHPCCNagiosToolSet::m_pContacts << ")\n";
+    std::cout << "  -contactgroups <val>            : host contact groups (Default: " << CHPCCNagiosToolSet::m_pContactGroups << ")\n";
+    std::cout << "  -notify_interval <val>          : host contact groups (Default: " << CHPCCNagiosToolSet::m_nNotificationInterval << ")\n";
+    std::cout << "  -notify_period <val>            : host contact groups (Default: " << CHPCCNagiosToolSet::m_pNotificationPeriod << ")\n";
     std::cout << "  -override_check_all_disks <val> : check_all_disk plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckDiskSpace << ")\n";
     std::cout << "  -override_check_users <val>     : check_users plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckUsers << ")\n";
     std::cout << "  -override_check_procs <val>     : check_procs plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckProcs << ")\n";
     std::cout << "  -override_check_load <val>      : check_load plugin name  (Default: " << CHPCCNagiosToolSet::m_pCheckLoad << ")\n";
+    std::cout << "  -override_send_status <val>     : send_status utility for escalations name (Default: "<< CHPCCNagiosToolSet::m_pSendStatus << ")\n";
     std::cout << "  -disable_check_all_disks        : disable disk space checks\n";
     std::cout << "  -disable_check_users            : disable user logged on checks\n";
     std::cout << "  -disable_check_procs            : disable process checks\n";
@@ -54,9 +58,11 @@ int main(int argc, char *argv[])
     StringBuffer strConfigGenPath;
     StringBuffer strOutputPath;
     StringBuffer strEnvFilePath;
-    bool bGenerateHostGroup         = false;
-    bool bGenerateServiceAndHost    = false;
-    bool bGenerateNRPECommands      = false;
+    bool bGenerateHostGroup                 = false;
+    bool bGenerateServiceAndHost            = false;
+    bool bGenerateNRPECommands              = false;
+    bool bGenerateEscalationConfig          = false;
+    bool bGenerateEscalationCommandConfig   = false;
 
     if (argc == 1)
     {
@@ -105,6 +111,14 @@ int main(int argc, char *argv[])
         else if (stricmp(argv[i], "-m") == 0 || stricmp(argv[i], "-commands") == 0)
         {
             bGenerateNRPECommands = true;
+        }
+        else if (stricmp(argv[i], "-escalations") == 0)
+        {
+            bGenerateEscalationConfig = true;
+        }
+        else if (stricmp(argv[i], "-escalation_commands") == 0)
+        {
+            bGenerateEscalationCommandConfig = true;
         }
         else if (stricmp(argv[i], "-u") == 0 || stricmp(argv[i], "-user") == 0)
         {
@@ -447,6 +461,20 @@ int main(int argc, char *argv[])
                 exit(1);
             }
         }
+        else if (stricmp(argv[i], "-override_send_status") == 0)
+        {
+            i++;
+
+            if (argv[i] != NULL && *argv[i] != 0)
+            {
+                strncpy(CHPCCNagiosToolSet::m_pSendStatus, argv[i], sizeof(CHPCCNagiosToolSet::m_pSendStatus));
+            }
+            else
+            {
+                std::cout << "invalid send_status value";
+                exit(1);
+            }
+        }
         i++;
     }
 
@@ -457,9 +485,9 @@ int main(int argc, char *argv[])
             std::cout << "Missing output file path! (-output)\n";
             return 0;
         }
-        else if ( bGenerateServiceAndHost + bGenerateHostGroup + bGenerateNRPECommands != 1) //(bGenerateServiceAndHost^bGenerateHostGroup)^bGenerateNRPECommands) == false)
+        else if ( bGenerateServiceAndHost + bGenerateHostGroup + bGenerateNRPECommands + bGenerateEscalationCommandConfig + bGenerateEscalationConfig != 1) //(bGenerateServiceAndHost^bGenerateHostGroup)^bGenerateNRPECommands) == false)
         {
-            std::cout << "Select one (1) type of config per invocation (e.g. -hostgroup xor -service xor -nrpe)\n";
+            std::cout << "Select one (1) type of config per invocation (e.g. -hostgroup xor -service xor -nrpe xor -escalations -xor -escalation_commands)\n";
             return 0;
         }
         else if (bGenerateHostGroup == true)
@@ -469,8 +497,8 @@ int main(int argc, char *argv[])
 
             if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
             {
-                std::cout << "\nError generating configuration!. Verify input.\n";
-                return 0;
+                std::cerr << "\nError generating configuration!. Verify input.\n";
+                return 1;
             }
         }
         else if (bGenerateServiceAndHost == true)
@@ -480,8 +508,8 @@ int main(int argc, char *argv[])
 
             if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
             {
-                std::cout << "\nError generating service and host configuration!. Verify input.\n";
-                return 0;
+                std::cerr << "\nError generating service and host configuration!. Verify input.\n";
+                return 1;
             }
         }
         else if (bGenerateNRPECommands == true)
@@ -489,15 +517,15 @@ int main(int argc, char *argv[])
             std::cout << "Generating nrpe client command config --> " << strOutputPath.str();
             std::flush(std::cout);
         }
-        else if (bGenerateServiceAndHost^bGenerateHostGroup == false)
+        else if (bGenerateServiceAndHost^bGenerateHostGroup^bGenerateEscalationCommandConfig^bGenerateEscalationConfig == false)
         {
-            std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service)\n";
-            return 0;
+            std::cerr << "Can only generate 1 type of config per invocation! (-hostgroup xor -service)\n";
+            return 1;
         }
-        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false)
+        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false && bGenerateEscalationConfig && bGenerateEscalationCommandConfig)
         {
-            std::cout << "Nothing to generate! (-hostgroup xor -service)\n";
-            return 0;
+            std::cerr << "Nothing to generate! (-hostgroup xor -service)\n";
+            return 1;
         }
         else if (bGenerateHostGroup == true)
         {
@@ -506,8 +534,8 @@ int main(int argc, char *argv[])
 
             if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
             {
-                std::cout << "\nError generating configuration!. Verify input.\n";
-                return 0;
+                std::cerr << "\nError generating configuration!. Verify input.\n";
+                return 1;
             }
         }
         else if (bGenerateServiceAndHost == true)
@@ -517,9 +545,31 @@ int main(int argc, char *argv[])
 
             if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
             {
-                std::cout << "\nError generating service and host configuration!. Verify input.\n";
-                return 0;
+                std::cerr << "\nError generating service and host configuration!. Verify input.\n";
+                return 1;
             }
+        }
+        else if (bGenerateEscalationConfig == true)
+        {
+            if (strOutputPath.length() == 0)
+            {
+                std::cerr << "No -output file specified\n";
+                return 1;
+            }
+
+            std::cout << "Generating escalation config --> " << strOutputPath.str();
+            CHPCCNagiosToolSet::generateCommandConfigurationFile(strOutputPath.str());
+        }
+        else if (bGenerateEscalationCommandConfig == true)
+        {
+            if (strOutputPath.length() == 0)
+            {
+                std::cerr << "No -output file specified\n";
+                return 1;
+            }
+
+            std::cout << "Generating command config --> " << strOutputPath.str();
+            CHPCCNagiosToolSet::generateCommandConfigurationFile(strOutputPath.str());
         }
 
         std::cout << "\nDone!\n";

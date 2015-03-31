@@ -6,6 +6,7 @@
 
 static const char *PCONFIGGEN_PATH(ADMIN_DIR"/configgen");
 static const char *PENV_XML(CONFIG_DIR"/environment.xml");
+static const char *PDEFAULT_HOST_AND_PORT("localhost:8010");
 
 class StringArray;
 class StringBuffer;
@@ -58,6 +59,8 @@ public:
     static char m_pCheckUsers[BUFFER_SIZE_2];
     static char m_pCheckLoad[BUFFER_SIZE_2];
 
+    static char m_pSendStatus[BUFFER_SIZE_2];
+
     static int m_uMaxCheckAttempts;
     static int m_nDiskSpacePercentageWarning;
     static int m_nDiskSpacePercentageCritical;
@@ -75,6 +78,7 @@ public:
 
     static bool generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateCommandConfigurationFile(const char* pOutputFilePath);
 
 protected:
 
@@ -84,8 +88,10 @@ protected:
     static bool generateNagiosRoxieCheckConfig(StringBuffer &strServiceConfig, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateNagiosDafileSrvCheckConfig(StringBuffer &strServiceConfig, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateNagiosSystemCheckConfig(StringBuffer &strServiceConfig, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateNagiosCommandConfig(StringBuffer &strCommandConfig, const char *pHostandPort = PDEFAULT_HOST_AND_PORT, const char *pCommandName = CHPCCNagiosToolSet::m_pSendStatus);
     static bool generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateNagiosNRPEClientConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateNagiosEscalationConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
 
 private:
 

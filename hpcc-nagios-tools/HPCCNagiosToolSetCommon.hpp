@@ -3,6 +3,7 @@
 
 #include "jstring.hpp"
 #include "jhash.hpp"
+#include "build-config.h"
 
 static const int   DEFAULT_TIMEOUT(5*1000);
 static const int   DALI_CHECK_TIMEOUT(DEFAULT_TIMEOUT);
@@ -23,9 +24,14 @@ static const char *P_CHECK_DALI("check_dali");
 static const char *P_CHECK_SASHA("check_sasha");
 static const char *P_CHECK_ROXIE("check_roxie");
 static const char *P_CHECK_DAFILESRV("check_dafilesrv");
+
+static const char *P_SEND_STATUS(EXEC_DIR"/send_status");
+
 static const char *P_HTTP("http");
 static const char *P_HTTPS("https");
 static const char *P_BY_TYPE(" -t ");
+
+static const char *P_ESCALATION_COMMAND("send_status");
 
 struct NodeName
 {
@@ -126,6 +132,20 @@ static const char *P_NAGIOS_HOSTS_GROUP_ALIAS("\n\
 static const char *P_NAGIOS_HOSTS_GROUP_MEMBERS("\n\
     members             ");
 static const char *P_NAGIOS_HOSTS_GROUP_END_BRACKET("\n\
+}\n");
+
+/*
+ define command {
+        command_name    send_status
+        command_line    /opt/HPCCSystems/bin/send_status!$ARG1$!$ARG2$!$ARG3$!$ARG4$!$ARG5$!$ARG6!$ARG7
+    }
+*/
+
+static const char *P_NAGIOS_COMMAND_CONFIG_1("define command{\n\
+    command_name        ");
+static const char *P_NAGIOS_COMMAND_CONFIG_COMMAND_LINE("\n\
+    command_line        ");
+static const char *P_NAGIOS_COMMAND_CONFIG_END_BRACKET("\n\
 }\n");
 
 #endif // _HPCC_NAGIOS_TOOL_SET_COMMON_HPP_

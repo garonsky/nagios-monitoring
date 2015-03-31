@@ -24,6 +24,7 @@
 
 project( send_status )
 
+include(${HPCC_SOURCE_DIR}/esp/scm/espscm.cmake)
 set (   SRCS
         ${ESPSCM_GENERATED_DIR}/ws_machine_esp.cpp 
         main.cpp

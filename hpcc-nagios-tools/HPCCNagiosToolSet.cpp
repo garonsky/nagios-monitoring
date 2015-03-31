@@ -38,6 +38,7 @@ char CHPCCNagiosToolSet::m_pCheckProcs[BUFFER_SIZE_2]           = {"check_procs"
 char CHPCCNagiosToolSet::m_pCheckDiskSpace[BUFFER_SIZE_2]       = {"check_all_disks"};
 char CHPCCNagiosToolSet::m_pCheckUsers[BUFFER_SIZE_2]           = {"check_users"};
 char CHPCCNagiosToolSet::m_pCheckLoad[BUFFER_SIZE_2]            = {"check_load"};
+char CHPCCNagiosToolSet::m_pSendStatus[BUFFER_SIZE_2]           = {"send_status"};
 
 int CHPCCNagiosToolSet::m_uMaxCheckAttempts             = 5;
 int CHPCCNagiosToolSet::m_nDiskSpacePercentageWarning   = 15;
@@ -442,6 +443,36 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
 
     free(pOutput);
     return true;
+}
+
+bool CHPCCNagiosToolSet::generateCommandConfigurationFile(const char* pOutputFilePath)
+{
+    if (pOutputFilePath == NULL || *pOutputFilePath == 0)
+    {
+        return false;
+    }
+
+    OwnedIFile outputFile = createIFile(pOutputFilePath);
+    OwnedIFileIO io = outputFile->open(IFOcreaterw);
+
+    if (io == NULL)
+    {
+        std::cerr << "Can not open:" <<  pOutputFilePath << std::endl;
+        return false;
+    }
+
+    StringBuffer strCommandConfig;
+
+    bool bRetVal = CHPCCNagiosToolSet::lgenerateNagiosCommandConfig(strCommandConfig);//, pHostandPort, pCommandName);
+
+    if (bRetVal == true)
+    {
+        io->write(0, strCommandConfig.length(), strCommandConfig.str());
+    }
+
+    io->close();
+
+    return bRetVal;
 }
 
 bool CHPCCNagiosToolSet::getConfigGenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, StringBuffer &strBuff)
@@ -1136,4 +1167,21 @@ char* CHPCCNagiosToolSet::invokeConfigGen(const char* pEnvXML, const char* pConf
     }
 
     return pOutput;
+}
+
+bool CHPCCNagiosToolSet::generateNagiosEscalationConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML, const char* pConfigGenPath)
+{
+
+}
+
+bool CHPCCNagiosToolSet::generateNagiosCommandConfig(StringBuffer &strCommandConfig, const char *pHostandPort, const char *pCommandName)
+{
+    if (pHostandPort == NULL || *pHostandPort == 0)
+    {
+        return false;
+    }
+
+    strCommandConfig.appendf("%s%s%s!$ARG1$!$ARG2$!$ARG3$!$ARG4$!$ARG5$!$ARG6!$ARG7%s", P_NAGIOS_COMMAND_CONFIG_1, P_NAGIOS_COMMAND_CONFIG_COMMAND_LINE, pCommandName, P_NAGIOS_COMMAND_CONFIG_END_BRACKET);
+
+    return true;
 }
