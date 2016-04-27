@@ -28,8 +28,8 @@ message ("-- 64bit architecture is ${ARCH64BIT}")
                         ERROR_VARIABLE  packageManagement
                 )
 
-IF ("${COMMONSETUP_DONE}" STREQUAL "")
-  SET (COMMONSETUP_DONE 1)
+IF ("${NM_COMMONSETUP_DONE}" STREQUAL "")
+  SET (NM_COMMONSETUP_DONE 1)
 
   MACRO (MACRO_ENSURE_OUT_OF_SOURCE_BUILD _errorMessage)
     STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)

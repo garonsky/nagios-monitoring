@@ -53,21 +53,21 @@ public:
     static bool m_bEnableHostEscalations;
     static bool m_bUseHTTPS;
 
-    static char m_pNRPE[BUFFER_SIZE_1];
-    static char m_pSeparator[BUFFER_SIZE_1];
-    static char m_pUserMacro[BUFFER_SIZE_1];
-    static char m_pPasswordMacro[BUFFER_SIZE_1];
+    static StringBuffer m_strNRPE;
+    static StringBuffer m_strSeparator;
+    static StringBuffer m_strUserMacro;
+    static StringBuffer m_strPasswordMacro;
     static StringBuffer m_pUserMacroArray[MAX_CUSTOM_VARS];  // support for 32 user variables
     static StringBuffer m_pPasswordMacroArray[MAX_CUSTOM_VARS];
     static StringBuffer m_EspUserNamePWOverrides[MAX_CUSTOM_VARS];
     static StringBuffer m_strCommandLine;
 
     static int  m_pCheckInterval;
-    static char m_pCheckPeriod[BUFFER_SIZE_1];
-    static char m_pContacts[BUFFER_SIZE_2];
-    static char m_pContactGroups[BUFFER_SIZE_2];
+    static StringBuffer m_strCheckPeriod;
+    static StringBuffer m_strContacts;
+    static StringBuffer m_strContactGroups;
     static int  m_nNotificationInterval;
-    static char m_pNotificationPeriod[BUFFER_SIZE_2];
+    static StringBuffer m_strNotificationPeriod;
     static int  m_nRetryInteval;
     static int  m_nActiveChecksEnabled;
     static int  m_nPassiveChecksEnabled;
@@ -86,16 +86,16 @@ public:
     static int  m_nEnabled;
     static int  m_nDisabled;
 
-    static char m_pCheckProcs[BUFFER_SIZE_2];
-    static char m_pCheckDiskSpace[BUFFER_SIZE_2];
-    static char m_pCheckUsers[BUFFER_SIZE_2];
-    static char m_pCheckLoad[BUFFER_SIZE_2];
-    static char m_pSendServiceStatus[BUFFER_SIZE_2];
-    static char m_pSendHostStatus[BUFFER_SIZE_2];
-    static char m_pDevNULL[BUFFER_SIZE_1];
-    static char m_pServiceNotificatonCommand[BUFFER_SIZE_2];
-    static char m_pHostNotificatonCommand[BUFFER_SIZE_2];
-    static char m_pNotificationURL[URL_BUFFER_SIZE];
+    static StringBuffer m_strCheckProcs;
+    static StringBuffer m_strCheckDiskSpace;
+    static StringBuffer m_strCheckUsers;
+    static StringBuffer m_strCheckLoad;
+    static StringBuffer m_strSendServiceStatus;
+    static StringBuffer m_strSendHostStatus;
+    static StringBuffer m_strDevNULL;
+    static StringBuffer m_strServiceNotificatonCommand;
+    static StringBuffer m_strHostNotificatonCommand;
+    static StringBuffer m_strNotificationURL;
 
     static int m_uMaxCheckAttempts;
     static int m_nDiskSpacePercentageWarning;

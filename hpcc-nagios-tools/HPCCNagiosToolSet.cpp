@@ -29,18 +29,18 @@
 
 #define BUFFER_SIZE_3 1024
 
-const char *P_DALI("dali");
-const char *P_SASHA("sasha");
-const char *P_ROXIE("roxie");
-const char *P_DAFILESRV("dafilesrv");
-const char *P_THOR("thor");
+constexpr const char *P_DALI("dali");
+constexpr const char *P_SASHA("sasha");
+constexpr const char *P_ROXIE("roxie");
+constexpr const char *P_DAFILESRV("dafilesrv");
+constexpr const char *P_THOR("thor");
 
-const char *P_ECLWATCH_FLAG(" -e ");
-const char *P_USER_MACRO_FLAG(" -u ");
-const char *P_PASSWORD_MACRO_FLAG(" -p ");
-const char *P_USE_HTTPS_FLAG(" -l ");
-const char *P_SET_DETAIL_URL_FLAG( " -r " );
-const char *P_SET_APPEND_PORT_FROM_DETAIL(" -g ");
+constexpr const char *P_ECLWATCH_FLAG(" -e ");
+constexpr const char *P_USER_MACRO_FLAG(" -u ");
+constexpr const char *P_PASSWORD_MACRO_FLAG(" -p ");
+constexpr const char *P_USE_HTTPS_FLAG(" -l ");
+constexpr const char *P_SET_DETAIL_URL_FLAG( " -r " );
+constexpr const char *P_SET_APPEND_PORT_FROM_DETAIL(" -g ");
 
 static bool bDoLookUp = true;
 
@@ -55,20 +55,20 @@ bool CHPCCNagiosToolSet::m_bCheckProcs                          = true;
 bool CHPCCNagiosToolSet::m_bEnableServiceEscalations            = false;
 bool CHPCCNagiosToolSet::m_bEnableHostEscalations               = false;
 bool CHPCCNagiosToolSet::m_bUseHTTPS                            = false;
-char CHPCCNagiosToolSet::m_pSeparator[BUFFER_SIZE_1]            = {"ip:"};
-char CHPCCNagiosToolSet::m_pNRPE[BUFFER_SIZE_1]                 = {""};
-char CHPCCNagiosToolSet::m_pUserMacro[BUFFER_SIZE_1]            = {};
-char CHPCCNagiosToolSet::m_pPasswordMacro[BUFFER_SIZE_1]        = {};
+StringBuffer CHPCCNagiosToolSet::m_strSeparator                 = "ip:";
+StringBuffer CHPCCNagiosToolSet::m_strNRPE                      = "";
+StringBuffer CHPCCNagiosToolSet::m_strUserMacro                 = "";
+StringBuffer CHPCCNagiosToolSet::m_strPasswordMacro             = "";
 StringBuffer CHPCCNagiosToolSet::m_pUserMacroArray[MAX_CUSTOM_VARS];
 StringBuffer CHPCCNagiosToolSet::m_pPasswordMacroArray[MAX_CUSTOM_VARS];
 StringBuffer CHPCCNagiosToolSet::m_EspUserNamePWOverrides[MAX_CUSTOM_VARS];
-StringBuffer CHPCCNagiosToolSet::m_strCommandLine;
-char CHPCCNagiosToolSet::m_pCheckPeriod[BUFFER_SIZE_1]          = {"24x7"};
+StringBuffer CHPCCNagiosToolSet::m_strCommandLine               = "";
+StringBuffer CHPCCNagiosToolSet::m_strCheckPeriod               = "24x7";
 int  CHPCCNagiosToolSet::m_pCheckInterval                       = 1;
-char CHPCCNagiosToolSet::m_pContacts[BUFFER_SIZE_2]             = {"eclwatch"};
-char CHPCCNagiosToolSet::m_pContactGroups[BUFFER_SIZE_2]        = {"eclwatch_group"};
+StringBuffer CHPCCNagiosToolSet::m_strContacts                  = "eclwatch";
+StringBuffer CHPCCNagiosToolSet::m_strContactGroups             = "eclwatch_group";
 int  CHPCCNagiosToolSet::m_nNotificationInterval                = 1;
-char CHPCCNagiosToolSet::m_pNotificationPeriod[BUFFER_SIZE_2]   = {"24x7"};
+StringBuffer CHPCCNagiosToolSet::m_strNotificationPeriod        = "24x7";
 int  CHPCCNagiosToolSet::m_nEnabled                             = 1;
 int  CHPCCNagiosToolSet::m_nDisabled                            = 0;
 int  CHPCCNagiosToolSet::m_nRetryInteval                        = 1;
@@ -87,17 +87,17 @@ int  CHPCCNagiosToolSet::m_nIsVolatile                          = CHPCCNagiosToo
 int  CHPCCNagiosToolSet::m_nNormalCheckInterval                 = 1;
 int  CHPCCNagiosToolSet::m_nRetryCheckInterval                  = 1;
 
-char CHPCCNagiosToolSet::m_pCheckProcs[BUFFER_SIZE_2]           = {"check_procs"};
-char CHPCCNagiosToolSet::m_pCheckDiskSpace[BUFFER_SIZE_2]       = {"check_all_disks"};
-char CHPCCNagiosToolSet::m_pCheckUsers[BUFFER_SIZE_2]           = {"check_users"};
-char CHPCCNagiosToolSet::m_pCheckLoad[BUFFER_SIZE_2]            = {"check_load"};
-char CHPCCNagiosToolSet::m_pDevNULL[BUFFER_SIZE_1]              = {""};//{ "2> /dev/null/"};
-char CHPCCNagiosToolSet::m_pSendHostStatus[BUFFER_SIZE_2]       = {EXEC_DIR"/send_status -o $HOSTADDRESS$ -s $HOSTSTATE$ -d '$HOSTNOTES$' -t $TIMET$ -n $HOSTDISPLAYNAME$"};
-char CHPCCNagiosToolSet::m_pSendServiceStatus[BUFFER_SIZE_2]    = {EXEC_DIR"/send_status -o $HOSTADDRESS$ -s $SERVICESTATE$ -d '$SERVICENOTES$' -t $TIMET$ -n $SERVICEDISPLAYNAME$"};
+StringBuffer CHPCCNagiosToolSet::m_strCheckProcs                = "check_procs";
+StringBuffer CHPCCNagiosToolSet::m_strCheckDiskSpace            = "check_all_disks";
+StringBuffer CHPCCNagiosToolSet::m_strCheckUsers                = "check_users";
+StringBuffer CHPCCNagiosToolSet::m_strCheckLoad                 = "check_load";
+StringBuffer CHPCCNagiosToolSet::m_strDevNULL                   = "";//{ "2> /dev/null/"};
+StringBuffer CHPCCNagiosToolSet::m_strSendHostStatus            = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $HOSTSTATE$ -d '$HOSTNOTES$' -t $TIMET$ -n $HOSTDISPLAYNAME$";
+StringBuffer CHPCCNagiosToolSet::m_strSendServiceStatus         = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $SERVICESTATE$ -d '$SERVICENOTES$' -t $TIMET$ -n $SERVICEDISPLAYNAME$";
 
-char CHPCCNagiosToolSet::m_pServiceNotificatonCommand[BUFFER_SIZE_2] = {"send_service_status"};
-char CHPCCNagiosToolSet::m_pHostNotificatonCommand[BUFFER_SIZE_2]    = {"send_host_status"};
-char CHPCCNagiosToolSet::m_pNotificationURL[URL_BUFFER_SIZE]    = "";
+StringBuffer CHPCCNagiosToolSet::m_strServiceNotificatonCommand = "send_service_status";
+StringBuffer CHPCCNagiosToolSet::m_strHostNotificatonCommand    = "send_host_status";
+StringBuffer CHPCCNagiosToolSet::m_strNotificationURL           = "";
 
 int CHPCCNagiosToolSet::m_uMaxCheckAttempts             = 10;
 int CHPCCNagiosToolSet::m_nDiskSpacePercentageWarning   = 15;
@@ -119,7 +119,7 @@ public:
     CHPCCNagiosHostEventForSSH(StringBuffer *pStrBuffer) : CHPCCNagiosHostEvent(pStrBuffer)
     {
     }
-    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote)
+    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote) override
     {
         StringBuffer strNote;
 
@@ -135,7 +135,7 @@ public:
         else
         {
             m_pStrBuffer->append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append("check for ssh connectivity")\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_SSH_SERVICE);
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_SSH_SERVICE);
 
             if (CHPCCNagiosToolSet::m_bUseNPRE == false)
             {
@@ -166,7 +166,7 @@ public:
     CHPCCNagiosHostEventHostConfig(StringBuffer *pStrBuffer) : CHPCCNagiosHostEvent(pStrBuffer)
     {
     }
-    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote)
+    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote) override
     {
         StringBuffer strNote;
 
@@ -190,11 +190,11 @@ public:
                     .append(P_NAGIOS_SERVICE_FLAP_DETECTION_ENABLED).append(CHPCCNagiosToolSet::m_nFlapDetectionEnabled)\
                     .append(P_NAGIOS_SERVICE_FAILURE_PREDICTION_ENABLED).append(CHPCCNagiosToolSet::m_nFailurePredictionEnabled)\
                     .append(P_NAGIOS_HOST_CONFIG_MAX_CHECK_ATTEMPTS).append(CHPCCNagiosToolSet::m_uMaxCheckAttempts)\
-                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_pCheckPeriod)\
+                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_strCheckPeriod)\
 /*                    .append(P_NAGIOS_HOST_CONFIG_CONTACTS).append(CHPCCNagiosToolSet::m_pContacts)\*/
-                    .append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_pContactGroups)\
+                    .append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_strContactGroups)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_INTERVAL).append(CHPCCNagiosToolSet::m_nNotificationInterval)\
-                    .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_PERIOD).append(CHPCCNagiosToolSet::m_pNotificationPeriod)\
+                    .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_PERIOD).append(CHPCCNagiosToolSet::m_strNotificationPeriod)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATIONS_ENABLED);
 
             if (CHPCCNagiosToolSet::m_bEnableHostEscalations == true)
@@ -223,7 +223,7 @@ public:
     CHPCCNagiosNRPEClientEventConfig(StringBuffer *pStrBuffer) : CHPCCNagiosHostEvent(pStrBuffer)
     {
     }
-    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote)
+    virtual void onHostEvent(const char *pHostName, int idx, const char *pToken, const char* pNote) override
     {
         StringBuffer strNote;
 
@@ -242,11 +242,11 @@ public:
                     .append(idx).append(P_NAGIOS_HOST_CONFIG_ADDRESS).append(pToken)\
                     .append(P_NAGIOS_HOST_DISPLAY_NAME).append(pHostName)\
                     .append(P_NAGIOS_HOST_CONFIG_MAX_CHECK_ATTEMPTS).append(CHPCCNagiosToolSet::m_uMaxCheckAttempts)\
-                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_pCheckPeriod)\
-                    .append(P_NAGIOS_HOST_CONFIG_CONTACTS).append(CHPCCNagiosToolSet::m_pContacts)\
-                    .append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_pContactGroups)\
+                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_strCheckPeriod)\
+                    .append(P_NAGIOS_HOST_CONFIG_CONTACTS).append(CHPCCNagiosToolSet::m_strContacts)\
+                    .append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_strContactGroups)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_INTERVAL).append(CHPCCNagiosToolSet::m_nNotificationInterval)\
-                    .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_PERIOD).append(CHPCCNagiosToolSet::m_pNotificationPeriod)\
+                    .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_PERIOD).append(CHPCCNagiosToolSet::m_strNotificationPeriod)\
                     .append(P_NAGIOS_HOST_CONFIG_END);
             m_pStrBuffer->append("\n");
         }
@@ -457,6 +457,8 @@ bool CHPCCNagiosToolSet::generateNagiosNRPEClientConfig(CHPCCNagiosHostEvent &ev
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
 
     free(pOutput);
+
+    return true;
 }
 
 bool CHPCCNagiosToolSet::generateEscalationCommandConfigurationFile(const char* pOutputFilePath, const StringArray &strEclWatchHostPortArray, const char* pUserMacro, const char* pPasswordMacro,\
@@ -524,8 +526,8 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
     {
         if (nCount % nNumValues ==  0) // Process name
         {
-            if (*pch != 0 && (strcmp(pch,XML_TAG_ESPPROCESS) == 0) || strcmp(pch, XML_TAG_DALISERVERPROCESS) == 0\
-                || strcmp(pch, XML_TAG_SASHA_SERVER_PROCESS) == 0 || strcmp(pch, XML_TAG_DAFILESERVERPROCESS) == 0)
+            if (*pch != 0 && ((strcmp(pch,XML_TAG_ESPPROCESS) == 0) || strcmp(pch, XML_TAG_DALISERVERPROCESS) == 0\
+                || strcmp(pch, XML_TAG_SASHA_SERVER_PROCESS) == 0 || strcmp(pch, XML_TAG_DAFILESERVERPROCESS) == 0))
             {
                 i++;
             }
@@ -552,7 +554,7 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
 
     if (CHPCCNagiosToolSet::m_bUseNPRE == true)
     {
-        strncpy(CHPCCNagiosToolSet::m_pNRPE, P_CHECK_NRPE_1_ARG, sizeof(CHPCCNagiosToolSet::m_pNRPE));
+        CHPCCNagiosToolSet::m_strNRPE.set(P_CHECK_NRPE_1_ARG);
     }
 
     CHPCCNagiosToolSet::generateNagiosEspServiceConfig(strServiceConfig, pEnvXML, pConfigGenPath);
@@ -706,11 +708,11 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
         }
         else if (nCount % 7 == 6) // protocol
         {
-            VStringBuffer strNote("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_pSeparator, strIPAddress.str(), strPort.str());
+            VStringBuffer strNote("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_strSeparator.str(), strIPAddress.str(), strPort.str());
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION)\
                     .append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(m_pNRPE).append(P_CHECK_ESP_SERVICE).append( strcmp(pch,P_HTTP) == 0 ? P_HTTP : P_HTTPS)\
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(m_strNRPE).append(P_CHECK_ESP_SERVICE).append( strcmp(pch,P_HTTP) == 0 ? P_HTTP : P_HTTPS)\
                     .append(CHPCCNagiosToolSet::m_bUseAuthentication ? "_auth" : "");
 
             if (m_bUseNPRE == false)
@@ -720,7 +722,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
 
             if (m_bUseAuthentication == true)
             {
-                strServiceConfig.appendf("%s%s%s%s", P_NAGIOS_SEPERATOR, getEspUserName(pProcessName, m_pUserMacro), P_NAGIOS_SEPERATOR, getEspPassword(pProcessName, m_pPasswordMacro));
+                strServiceConfig.appendf("%s%s%s%s", P_NAGIOS_SEPERATOR, getEspUserName(pProcessName, m_strUserMacro), P_NAGIOS_SEPERATOR, getEspPassword(pProcessName, m_strPasswordMacro));
             }
 
             CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, XML_TAG_ESPPROCESS, strNote.str());
@@ -816,10 +818,10 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
         else if (nCount % nNumValues == 4)
         {
             StringBuffer strNote;
-            strNote.appendf("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_pSeparator, strIPAddress.str(), strPort.str());
+            strNote.appendf("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_strSeparator.str(), strIPAddress.str(), strPort.str());
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_DALI);
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_DALI);
 
             if (CHPCCNagiosToolSet::m_bUseNPRE == false)
             {
@@ -919,10 +921,10 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
         else if (nCount % nNumValues == 4)
         {
             StringBuffer strNote;
-            strNote.appendf("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_pSeparator, strIPAddress.str(), strPort.str());
+            strNote.appendf("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_strSeparator.str(), strIPAddress.str(), strPort.str());
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_SASHA);
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_SASHA);
 
             if (CHPCCNagiosToolSet::m_bUseNPRE == false)
             {
@@ -1018,7 +1020,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
             strNote.appendf("check for %s of type %s", pProcessName, pProcess);
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_ROXIE);
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_ROXIE);
 
             CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, XML_TAG_ROXIE_SERVER, strNote.str());
 
@@ -1078,8 +1080,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             if (CHPCCNagiosToolSet::m_bCheckProcs == true)
             {
                 // processes
-                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_pCheckProcs)\
-                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(m_pCheckProcs);
+                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_strCheckProcs.str())\
+                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(m_strCheckProcs);
 
                 if (CHPCCNagiosToolSet::m_bUseNPRE == false)
                 {
@@ -1088,8 +1090,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 }
 
                 StringBuffer strNote;
-                strNote.appendf("check for %s", m_pCheckProcs);
-                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_pCheckProcs, strNote.str());
+                strNote.appendf("check for %s", m_strCheckProcs.str());
+                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_strCheckProcs, strNote.str());
 
                 strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
             }
@@ -1097,8 +1099,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             if (CHPCCNagiosToolSet::m_bCheckAllDisks  == true)
             {
                 // disk space
-                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_pCheckDiskSpace)\
-                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(m_pCheckDiskSpace);
+                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_strCheckDiskSpace.str())\
+                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(m_strCheckDiskSpace);
 
                 if (CHPCCNagiosToolSet::m_bUseNPRE == false)
                 {
@@ -1107,8 +1109,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 }
 
                 StringBuffer strNote;
-                strNote.appendf("check for %s", m_pCheckDiskSpace);
-                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_pCheckDiskSpace, strNote.str());
+                strNote.appendf("check for %s", m_strCheckDiskSpace.str());
+                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_strCheckDiskSpace, strNote.str());
 
                 strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
             }
@@ -1116,8 +1118,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             if (CHPCCNagiosToolSet::m_bCheckUsers == true)
             {
                 // number of users
-                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_pCheckUsers)\
-                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(m_pCheckUsers);
+                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_strCheckUsers.str())\
+                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(m_strCheckUsers);
 
                 if (CHPCCNagiosToolSet::m_bUseNPRE == false)
                 {
@@ -1125,8 +1127,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 }
 
                 StringBuffer strNote;
-                strNote.appendf("check for %s", m_pCheckUsers);
-                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_pCheckUsers, strNote.str());
+                strNote.appendf("check for %s", m_strCheckUsers.str());
+                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_strCheckUsers, strNote.str());
 
                 strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
             }
@@ -1134,8 +1136,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             if (CHPCCNagiosToolSet::m_bCheckLoad  == true)
             {
                 // system load
-                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_pCheckLoad)\
-                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(m_pCheckLoad);
+                strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).appendf("check for %s", m_strCheckLoad.str())\
+                        .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(m_strCheckLoad);
 
                 if (CHPCCNagiosToolSet::m_bUseNPRE == false)
                 {
@@ -1148,8 +1150,8 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 }
 
                 StringBuffer strNote;
-                strNote.appendf("check for %s", m_pCheckLoad);
-                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_pCheckLoad, strNote.str());
+                strNote.appendf("check for %s", m_strCheckLoad.str());
+                CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, m_strCheckLoad, strNote.str());
 
                 strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
             }
@@ -1250,10 +1252,10 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
         }
         else if (nCount % nNumValues == 4)
         {
-            VStringBuffer strNote("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_pSeparator, strIPAddress.str(), strPort.str());
+            VStringBuffer strNote("check for %s of type %s %s%s:%s", pProcessName, pProcess, CHPCCNagiosToolSet::m_strSeparator.str(), strIPAddress.str(), strPort.str());
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_THORMASTER).append(P_NAGIOS_SEPERATOR).append(strPort.str());
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_THORMASTER).append(P_NAGIOS_SEPERATOR).append(strPort.str());
 
             CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, XML_TAG_THORMASTERPROCESS, strNote.str());
 
@@ -1346,7 +1348,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
             strNote.appendf("check for %s of type %s", pProcessName, pProcess);
 
             strServiceConfig.append(P_NAGIOS_SERVICE_CONFIG_2).append(pHostName).append(P_NAGIOS_SERVICE_DESCRIPTION).append(strNote.str())\
-                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_pNRPE).append(P_CHECK_DAFILESRV);
+                    .append(P_NAGIOS_SERVICE_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strNRPE).append(P_CHECK_DAFILESRV);
 
             CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(strServiceConfig, XML_TAG_DAFILESERVERPROCESS, strNote.str());
 
@@ -1425,11 +1427,11 @@ bool CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(StringBuffer &str
     strServiceConfig.append(P_NAGIOS_SERVICE_DISPLAY_NAME).append(pDisplayName);
     strServiceConfig.append(P_NAGIOS_SERVICE_MAX_CHECK_ATTEMPTS).append(m_uMaxCheckAttempts);
 //    strServiceConfig.append(P_NAGIOS_SERVICE_CHECK_INTERVAL).append(m_pCheckInterval);
-    strServiceConfig.append(P_NAGIOS_SERVICE_CHECK_PERIOD).append(m_pCheckPeriod);
+    strServiceConfig.append(P_NAGIOS_SERVICE_CHECK_PERIOD).append(m_strCheckPeriod);
     strServiceConfig.append(P_NAGIOS_SERVICE_RETRY_INTERVAL).append(m_nRetryInteval);
-    strServiceConfig.append(P_NAGIOS_SERVICE_NOTIFICATION_PERIOD).append(m_pNotificationPeriod);
+    strServiceConfig.append(P_NAGIOS_SERVICE_NOTIFICATION_PERIOD).append(m_strNotificationPeriod);
     //strServiceConfig.append(P_NAGIOS_SERVICE_CONTACTS).append(m_pContacts);
-    strServiceConfig.append(P_NAGIOS_SERVICE_CONTACT_GROUPS).append(m_pContactGroups);
+    strServiceConfig.append(P_NAGIOS_SERVICE_CONTACT_GROUPS).append(m_strContactGroups);
     strServiceConfig.append(P_NAGIOS_SERVICE_NOTES).append(pNote);
     strServiceConfig.append(P_NAGIOS_SERVICE_NOTIFICATIONS_ENABLED);
 
@@ -1563,8 +1565,8 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
     free(pOutput);
 
     strCommandConfig.append(P_NAGIOS_COMMAND_CONFIG_1);
-    strCommandConfig.append(P_NAGIOS_COMMAND_NAME).append(CHPCCNagiosToolSet::m_pServiceNotificatonCommand);
-    strCommandConfig.append(P_NAGIOS_COMMAND_LINE).append(CHPCCNagiosToolSet::m_pSendServiceStatus);
+    strCommandConfig.append(P_NAGIOS_COMMAND_NAME).append(CHPCCNagiosToolSet::m_strServiceNotificatonCommand);
+    strCommandConfig.append(P_NAGIOS_COMMAND_LINE).append(CHPCCNagiosToolSet::m_strSendServiceStatus);
 
     if (strEclWatchHostPortArray.length() > 0)
     {
@@ -1586,8 +1588,8 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
     strCommandConfig.appendf("%s\n", P_NAGIOS_COMMAND_END_BRACKET);
 
     strCommandConfig.append(P_NAGIOS_COMMAND_CONFIG_1);
-    strCommandConfig.append(P_NAGIOS_COMMAND_NAME).append(CHPCCNagiosToolSet::m_pHostNotificatonCommand);
-    strCommandConfig.append(P_NAGIOS_COMMAND_LINE).append(CHPCCNagiosToolSet::m_pSendHostStatus);
+    strCommandConfig.append(P_NAGIOS_COMMAND_NAME).append(CHPCCNagiosToolSet::m_strHostNotificatonCommand);
+    strCommandConfig.append(P_NAGIOS_COMMAND_LINE).append(CHPCCNagiosToolSet::m_strSendHostStatus);
 
     if (strEclWatchHostPortArray.length() > 0)
     {

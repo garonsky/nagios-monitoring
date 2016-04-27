@@ -23,7 +23,7 @@ void usage()
 {
     std::cout << "HPCC Systems Nagios configuration file generator (version: " << BUILD_VERSION_MAJOR  << "." << BUILD_VERSION_MINOR << "." << BUILD_VERSION_POINT << ")\n\
 Usage: hpcc-nagios-tools -env <environment file> -out <output path> [options]\n\
-Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\$\" -o /etc/nagios3/conf.d/hpcc1services.cfg -s -usernumwarn 10  -usernumcrit 15 -disable_check_all_disks\n\n";
+Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\$\" -o /etc/nagios3/conf.d/hpcc1services.cfg -s -usernumwarn 10  -usernumcrit 15 -check_all_disks true\n\n";
     std::cout << "  -c or -cfggen <val>         : The path to the configgen.  (Default: /opt/HPCCSystems/sbin/configgen)\n";
     std::cout << "  -g or -hostgroup            : generate host group file\n";
     std::cout << "  -s or -service              : generate service and host file\n";
@@ -32,11 +32,11 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -ec or -escalation_cmds     : generate escalation commands\n";
     std::cout << "  -enable_host_notify         : enable host notifications (default: " << CHPCCNagiosToolSet::m_bEnableHostEscalations << ")\n";
     std::cout << "  -enable_service_notify      : enable service notifications (default: " << CHPCCNagiosToolSet::m_bEnableServiceEscalations << ")\n";
-    std::cout << "  -set_url <val>              : set the url link for escalation notifications (Default " << CHPCCNagiosToolSet::m_pNotificationURL << "\n";
-    std::cout << "  -override_send_serivce_status <val> : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_pSendServiceStatus << ")\n";
-    std::cout << "  -override_send_host_status <val>    : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_pSendHostStatus << ")\n";
-    std::cout << "  -override_service_status <val>: override host_notification_commands (default: " << CHPCCNagiosToolSet::m_pServiceNotificatonCommand << ")\n";
-    std::cout << "  -override_host_status <val>   : override service_notification_commands (default: " << CHPCCNagiosToolSet::m_pHostNotificatonCommand << ")\n";
+    std::cout << "  -set_url <val>              : set the url link for escalation notifications (Default " << CHPCCNagiosToolSet::m_strNotificationURL << "\n";
+    std::cout << "  -override_send_serivce_status <val> : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendServiceStatus << ")\n";
+    std::cout << "  -override_send_host_status <val>    : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendHostStatus << ")\n";
+    std::cout << "  -override_service_status <val>: override host_notification_commands (default: " << CHPCCNagiosToolSet::m_strServiceNotificatonCommand << ")\n";
+    std::cout << "  -override_host_status <val>   : override service_notification_commands (default: " << CHPCCNagiosToolSet::m_strHostNotificatonCommand << ")\n";
     std::cout << "  -override_eclwatch_host_port: override eclwatch host port for escalation commands.  (May be specified multiple times)\n";
     std::cout << "  -o or -output <val>         : outpfile where the generated configuration will be written\n";
     std::cout << "  -r or -retry                : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
@@ -55,16 +55,16 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -usernumcrit <val>          : users logged in critical threshold (Default: " << CHPCCNagiosToolSet::m_nUserNumberCritical << ")\n";
     std::cout << "  -totalprocswarn <val>       : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
     std::cout << "  -totalprocscrit <val>       : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
-    std::cout << "  -checkperiod <val>          : host check period (Default: " << CHPCCNagiosToolSet::m_pCheckPeriod << ")\n";
-    std::cout << "  -contacts <val>             : host contacts     (Default: " << CHPCCNagiosToolSet::m_pContacts << ")\n";
-    std::cout << "  -contactgroups <val>        : host contact groups (Default: " << CHPCCNagiosToolSet::m_pContactGroups << ")\n";
+    std::cout << "  -checkperiod <val>          : host check period (Default: " << CHPCCNagiosToolSet::m_strCheckPeriod << ")\n";
+    std::cout << "  -contacts <val>             : host contacts     (Default: " << CHPCCNagiosToolSet::m_strContacts << ")\n";
+    std::cout << "  -contactgroups <val>        : host contact groups (Default: " << CHPCCNagiosToolSet::m_strContactGroups << ")\n";
     std::cout << "  -notify_interval <val>      : set notification interval (Default: " << CHPCCNagiosToolSet::m_nNotificationInterval << ")\n";
-    std::cout << "  -notify_period <val>        : set notification period (Default: " << CHPCCNagiosToolSet::m_pNotificationPeriod << ")\n";
+    std::cout << "  -notify_period <val>        : set notification period (Default: " << CHPCCNagiosToolSet::m_strNotificationPeriod << ")\n";
     std::cout << "  -set_esp_username_pw <esp name> <username> <password> : set specific logins credentials for esp checks.  All fields are required. Can be specified more than 1x\n";
-    std::cout << "  -override_check_all_disks <val> : check_all_disk plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckDiskSpace << ")\n";
-    std::cout << "  -override_check_users <val>     : check_users plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckUsers << ")\n";
-    std::cout << "  -override_check_procs <val>     : check_procs plugin name (Default: " << CHPCCNagiosToolSet::m_pCheckProcs << ")\n";
-    std::cout << "  -override_check_load <val>      : check_load plugin name  (Default: " << CHPCCNagiosToolSet::m_pCheckLoad << ")\n";
+
+
+
+
     std::cout << "  -override_retry_interval <val>          : check retry_interval (Default: " << CHPCCNagiosToolSet::m_nRetryInteval << ")\n";
     std::cout << "  -override_active_checks_enabled <val>   : active_checks (Default: " << CHPCCNagiosToolSet::m_nActiveChecksEnabled << ")\n";
     std::cout << "  -override_passive_checks_enabled <val>  : passive_checks (Default: " << CHPCCNagiosToolSet::m_nPassiveChecksEnabled << ")\n";
@@ -80,13 +80,29 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_failure_prediction_enabled <val>  : failure_prediction_enabled (Default: " << CHPCCNagiosToolSet::m_nFailurePredictionEnabled << ")\n";
     std::cout << "  -override_retain_status_information <val>   : retain_status_information (Default: " << CHPCCNagiosToolSet::m_nRetainStatusInformation << ")\n";
     std::cout << "  -override_retain_nonstatus_information <val>: retain_nonstatus_information (Default: " << CHPCCNagiosToolSet::m_nRetainNonStatusInformation << ")\n";
-    std::cout << "  -disable_check_all_disks        : disable disk space checks\n";
-    std::cout << "  -disable_check_users            : disable user logged on checks\n";
-    std::cout << "  -disable_check_procs            : disable process checks\n";
-    std::cout << "  -disable_check_load             : disable load check\n";
+
+    std::cout << "  -check_all_disks <true/false>   : enable/disable check_all_disks service check (Default: " << CHPCCNagiosToolSet::m_bCheckAllDisks << ")\n";
+    std::cout << "  -override_check_all_disks <val> : check_all_disk plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckDiskSpace << ")\n";
+
+    std::cout << "  -check_users <true/false>       : enable/disable check_users service check (Default: " << CHPCCNagiosToolSet::m_bCheckUsers << ")\n";
+    std::cout << "  -override_check_users <val>     : check_users plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckUsers << ")\n";
+
+    std::cout << "  -check_procs <true/false>       : enable/disable check_procs service check (Default: " << CHPCCNagiosToolSet::m_bCheckProcs << ")\n";
+    std::cout << "  -override_check_procs <val>     : check_procs plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckProcs << ")\n";
+    std::cout << "  -totalprocswarn <val>           : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
+    std::cout << "  -totalprocscrit <val>           : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
+
+
+    std::cout << "  -check_load <true/false>        : enable/disable check_load service check (Default: " << CHPCCNagiosToolSet::m_bCheckLoad << ")\n";
+    std::cout << "  -override_check_load <val>      : check_load plugin name  (Default: " << CHPCCNagiosToolSet::m_strCheckLoad << ")\n";
+
+    std::cout << "  -set_catch_all_hostgroup <name> <alias> : create a hostgroup and include all nodes as memebers\n";
+
     std::cout << "  -disable_use_of_note_for_host_port  : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
     std::cout << "  -use_https                      : use https connection for esp service calls (HIGHLY RECOMMENDED when using username/password)\n";
     std::cout << "  -d or -debug                    : verbose debug output\n\n";
+
+
 }
 
 int main(int argc, char *argv[])
@@ -174,9 +190,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pSendServiceStatus, argv[i], sizeof(CHPCCNagiosToolSet::m_pSendServiceStatus));
+                CHPCCNagiosToolSet::m_strSendServiceStatus.set(argv[i]);
             }
             else
             {
@@ -188,9 +204,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pSendHostStatus, argv[i], sizeof(CHPCCNagiosToolSet::m_pSendHostStatus));
+                CHPCCNagiosToolSet::m_strSendHostStatus.set(argv[i]);
             }
             else
             {
@@ -202,9 +218,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pServiceNotificatonCommand, argv[i], sizeof(CHPCCNagiosToolSet::m_pServiceNotificatonCommand));
+                CHPCCNagiosToolSet::m_strServiceNotificatonCommand.set(argv[i]);
             }
             else
             {
@@ -216,9 +232,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pHostNotificatonCommand, argv[i], sizeof(CHPCCNagiosToolSet::m_pHostNotificatonCommand));
+                CHPCCNagiosToolSet::m_strHostNotificatonCommand.set(argv[i]);
             }
             else
             {
@@ -236,14 +252,14 @@ int main(int argc, char *argv[])
             CHPCCNagiosToolSet::m_bUseAuthentication  = true;
 
             i++;
-            strncpy(CHPCCNagiosToolSet::m_pUserMacro, argv[i], sizeof(CHPCCNagiosToolSet::m_pUserMacro));
+            CHPCCNagiosToolSet::m_strUserMacro.set(argv[i]);
         }
         else if (stricmp(argv[i], "-p") == 0 || stricmp(argv[i], "-pass") == 0)
         {
             CHPCCNagiosToolSet::m_bUseAuthentication = true;
 
             i++;
-            strncpy(CHPCCNagiosToolSet::m_pPasswordMacro, argv[i], sizeof(CHPCCNagiosToolSet::m_pPasswordMacro));
+            CHPCCNagiosToolSet::m_strPasswordMacro.set(argv[i]);
         }
         else if (stricmp(argv[i], "-set_esp_username_pw") == 0)
         {
@@ -268,35 +284,66 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "\nInvalid attempts (-a) specified\n";
                 exit(1);
             }
             CHPCCNagiosToolSet::m_uMaxCheckAttempts = atoi(argv[i]);
         }
-        else if (stricmp(argv[i], "-disable_check_all_disks") == 0)
+        else if (stricmp(argv[i], "-check_all_disks") == 0)
         {
-            CHPCCNagiosToolSet::m_bCheckAllDisks  = false;
-        }
-        else if (stricmp(argv[i], "-disable_check_users") == 0)
-        {
-            CHPCCNagiosToolSet::m_bCheckUsers = false;
-        }
-        else if (stricmp(argv[i], "-disable_check_procs") == 0)
-        {
-            CHPCCNagiosToolSet::m_bCheckProcs = false;
-        }
-        else if (stricmp(argv[i], "-disable_check_load") == 0)
-        {
-            CHPCCNagiosToolSet::m_bCheckLoad = false;
-        }
+            i++;
 
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            {
+                std::cout << "-check_all_disks flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckAllDisks = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+        }
+        else if (stricmp(argv[i], "-check_users") == 0)
+        {
+            i++;
+
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            {
+                std::cout << "-check_users flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckUsers = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+        }
+        else if (stricmp(argv[i], "-check_procs") == 0)
+        {
+            i++;
+
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            {
+                std::cout << "-check_procs flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckProcs = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+        }
+        else if (stricmp(argv[i], "-check_load") == 0)
+        {
+            i++;
+
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            {
+                std::cout << "-check_load flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckLoad = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+        }
         else if (stricmp(argv[i], "-sysload1warn") == 0)
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad1Warn = atoi(argv[i]);
             }
@@ -310,7 +357,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad5Warn = atoi(argv[i]);
             }
@@ -324,7 +371,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad15Warn = atoi(argv[i]);
             }
@@ -338,7 +385,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad15Critical = atoi(argv[i]);
             }
@@ -352,7 +399,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad15Critical = atoi(argv[i]);
             }
@@ -366,7 +413,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_fSystemLoad15Critical = atoi(argv[i]);
             }
@@ -380,7 +427,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nDiskSpacePercentageWarning = atoi(argv[i]);
             }
@@ -394,7 +441,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nDiskSpacePercentageCritical = atoi(argv[i]);
             }
@@ -408,7 +455,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nUserNumberWarning = atoi(argv[i]);
             }
@@ -422,7 +469,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nUserNumberCritical = atoi(argv[i]);
             }
@@ -436,7 +483,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nTotalProcsWarning = atoi(argv[i]);
             }
@@ -450,7 +497,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nTotalProcsCritical = atoi(argv[i]);
             }
@@ -464,9 +511,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pCheckPeriod, argv[i], sizeof(CHPCCNagiosToolSet::m_pCheckPeriod));
+                CHPCCNagiosToolSet::m_strCheckPeriod.set(argv[i]);
             }
             else
             {
@@ -478,9 +525,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pContacts, argv[i], sizeof(CHPCCNagiosToolSet::m_pContacts));
+                CHPCCNagiosToolSet::m_strContacts.set(argv[i]);
             }
             else
             {
@@ -492,9 +539,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pContactGroups, argv[i], sizeof(CHPCCNagiosToolSet::m_pContactGroups));
+                CHPCCNagiosToolSet::m_strContactGroups.set(argv[i]);
             }
             else
             {
@@ -506,7 +553,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
                 CHPCCNagiosToolSet::m_nNotificationInterval = atoi(argv[i]);
             }
@@ -520,9 +567,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pNotificationPeriod, argv[i], sizeof(CHPCCNagiosToolSet::m_pNotificationPeriod));
+                CHPCCNagiosToolSet::m_strNotificationPeriod.set(argv[i]);
             }
             else
             {
@@ -534,9 +581,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pCheckDiskSpace, argv[i], sizeof(CHPCCNagiosToolSet::m_pCheckDiskSpace));
+                CHPCCNagiosToolSet::m_strCheckDiskSpace.set(argv[i]);
             }
             else
             {
@@ -548,9 +595,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pCheckUsers, argv[i], sizeof(CHPCCNagiosToolSet::m_pCheckUsers));
+                CHPCCNagiosToolSet::m_strCheckUsers.set(argv[i]);
             }
             else
             {
@@ -562,9 +609,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pCheckProcs, argv[i], sizeof(CHPCCNagiosToolSet::m_pCheckProcs));
+                CHPCCNagiosToolSet::m_strCheckProcs.set(argv[i]);
             }
             else
             {
@@ -576,7 +623,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_retry_interval value";
                 exit(1);
@@ -587,7 +634,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_active_checks_enabled value";
                 exit(1);
@@ -599,9 +646,9 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] != NULL && *argv[i] != 0)
+            if (argv[i] != nullptr && *argv[i] != 0)
             {
-                strncpy(CHPCCNagiosToolSet::m_pCheckLoad, argv[i], sizeof(CHPCCNagiosToolSet::m_pCheckLoad));
+                CHPCCNagiosToolSet::m_strCheckLoad.set(argv[i]);
             }
             else
             {
@@ -613,7 +660,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_passive_checks_enabled value";
                 exit(1);
@@ -624,7 +671,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_parallelize_check value";
                 exit(1);
@@ -635,7 +682,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_obsess_over_service value";
                 exit(1);
@@ -646,7 +693,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_check_freshness value";
                 exit(1);
@@ -657,7 +704,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_event_handler_enabled value";
                 exit(1);
@@ -668,7 +715,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_is_volatile value";
                 exit(1);
@@ -679,7 +726,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_normal_check_interval value";
                 exit(1);
@@ -690,7 +737,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_retry_check_interval value";
                 exit(1);
@@ -701,7 +748,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_flap_detection_enabled value";
                 exit(1);
@@ -712,7 +759,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_process_perf_data value";
                 exit(1);
@@ -723,7 +770,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_failure_prediction_enabled value";
                 exit(1);
@@ -734,7 +781,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_retain_status_information value";
                 exit(1);
@@ -745,7 +792,7 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == NULL || *argv[i] == 0)
+            if (argv[i] == nullptr || *argv[i] == 0)
             {
                 std::cout << "invalid override_retain_nonstatus_information value";
                 exit(1);
@@ -764,6 +811,14 @@ int main(int argc, char *argv[])
         {
             i++;
             strURL.set(argv[i]);
+        }
+        else if(stricmp(argv[i], "set_catch_all_hostgroup") == 0)
+        {
+            // TODO: Create new host group
+        }
+        else // KEEP AS THE LAST CONDITIONAL
+        {
+            std::cout << "Unknown parameter: " << argv[i] << "\nConfiguration generation failed.\n";
         }
         i++;
     }
@@ -785,7 +840,7 @@ int main(int argc, char *argv[])
             std::cout << "Generating hostgroup --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
                 std::cout << "\nError generating configuration!. Verify input.\n";
                 return 0;
@@ -796,7 +851,7 @@ int main(int argc, char *argv[])
             std::cout << "Generating service and host config --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
                 std::cout << "\nError generating service and host configuration!. Verify input.\n";
                 return 0;
@@ -807,7 +862,7 @@ int main(int argc, char *argv[])
             std::cout << "Generating nrpe client command config --> " << strOutputPath.str();
             std::flush(std::cout);
         }
-        else if (bGenerateServiceAndHost^bGenerateHostGroup^bGenerateEscalationCommands == false)
+        else if ((bGenerateServiceAndHost^bGenerateHostGroup^bGenerateEscalationCommands) == false)
         {
             std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service xor -escalation_cmds)\n";
             return 0;
@@ -822,7 +877,7 @@ int main(int argc, char *argv[])
             std::cout << "Generating hostgroup --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
                 std::cout << "\nError generating configuration! Verify input.\n";
                 return 0;
@@ -833,7 +888,7 @@ int main(int argc, char *argv[])
             std::cout << "Generating service and host config --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
                 std::cout << "\nError generating service and host configuration! Verify input.\n";
                 return 0;
@@ -846,13 +901,13 @@ int main(int argc, char *argv[])
 
             if (CHPCCNagiosToolSet::generateEscalationCommandConfigurationFile(strOutputPath.str(),
                                                                                strEclWatchHostPortArray,
-                                                                               (CHPCCNagiosToolSet::m_bUseAuthentication == true) ? CHPCCNagiosToolSet::m_pUserMacro : NULL,
-                                                                               (CHPCCNagiosToolSet::m_bUseAuthentication == true) ? CHPCCNagiosToolSet::m_pPasswordMacro : NULL,
+                                                                               (CHPCCNagiosToolSet::m_bUseAuthentication == true) ? CHPCCNagiosToolSet::m_strUserMacro.str() : nullptr,
+                                                                               (CHPCCNagiosToolSet::m_bUseAuthentication == true) ? CHPCCNagiosToolSet::m_strPasswordMacro.str() : nullptr,
                                                                                CHPCCNagiosToolSet::m_bUseHTTPS,
                                                                                bUseDetailForHostPort,
                                                                                strURL.str(),
-                                                                               (strEnvFilePath.length() == 0 ? NULL : strEnvFilePath.str()),
-                                                                               (strConfigGenPath.length() == 0 ? NULL : strConfigGenPath.str())
+                                                                               (strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()),
+                                                                               (strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
                                                                                 ) == false)
             {
                 std::cout << "\nError generating command configuration! Verify input.\n";
