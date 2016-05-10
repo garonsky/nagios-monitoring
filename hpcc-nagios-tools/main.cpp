@@ -41,9 +41,10 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_eclwatch_host_port: override eclwatch host port for escalation commands.  (May be specified multiple times)\n";
     std::cout << "  -o or -output <val>         : outpfile where the generated configuration will be written\n";
     std::cout << "  -r or -retry                : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
+    std::cout << "  -lookup <0/1>               : look up hostname form ip (Default: " << CHPCCNagiosToolSet::m_bDoLookUp << ")\n";
     std::cout << "  -u or -user <val>           : MACRO name to use for username for esp server login (e.g. $USER1$)\n";
     std::cout << "  -p or -pass <val>           : MACRO to use for password for esp server login (e.g. $USER2$)\n";
-    std::cout << "  -attempts <val>             : max host retry attempts   (defaut: " <<  CHPCCNagiosToolSet::m_uMaxCheckAttempts << ")\n";
+    std::cout << "  -attempts <val>             : max host retry attempts   (Default: " << CHPCCNagiosToolSet::m_uMaxCheckAttempts << ")\n";
     std::cout << "  -sysload1warn <val>         : load1 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad1Warn << ")\n";
     std::cout << "  -sysload5warn <val>         : load5 warning threshold   (Default: " << CHPCCNagiosToolSet::m_fSystemLoad5Warn << ")\n";
     std::cout << "  -sysload15warn <val>        : load15 warning threshold  (Default: " << CHPCCNagiosToolSet::m_fSystemLoad15Warn  << ")\n";
@@ -75,7 +76,7 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_event_handler_enabled <val>   : event_handler_enabled (Default: " << CHPCCNagiosToolSet::m_nEventHandlerEnabled << ")\n";
     std::cout << "  -override_is_volatile <val>             : is_volatile (Default: " << CHPCCNagiosToolSet::m_nIsVolatile << ")\n";
     std::cout << "  -override_normal_check_interval <val>   : normal_check_interval (Default: " << CHPCCNagiosToolSet::m_nNormalCheckInterval << ")\n";
-    std::cout << "  -override_retry_check_interval <val>    : retry_check_interval (Default: " << CHPCCNagiosToolSet::m_nRetryCheckInterval << ")\n";
+    //std::cout << "  -override_retry_check_interval <val>    : retry_check_interval (Default: " << CHPCCNagiosToolSet::m_nRetryCheckInterval << ")\n";
     std::cout << "  -override_flap_detection_enabled <val>  : flap_detection_enabled (Default: " << CHPCCNagiosToolSet::m_nFlapDetectionEnabled << ")\n";
     std::cout << "  -override_process_perf_data <val>       : process_perf_data (Default: " << CHPCCNagiosToolSet::m_nProcessPerfData << ")\n";
     std::cout << "  -override_failure_prediction_enabled <val>  : failure_prediction_enabled (Default: " << CHPCCNagiosToolSet::m_nFailurePredictionEnabled << ")\n";
@@ -177,6 +178,11 @@ int main(int argc, char *argv[])
         else if (stricmp(argv[i], "-r") == 0 || stricmp(argv[i], "-retry") == 0)
         {
             CHPCCNagiosToolSet::m_retryHostNameLookUp = true;
+        }
+        else if (stricmp(argv[i], "-lookup") == 0)
+        {
+            i++;
+            CHPCCNagiosToolSet::m_bDoLookUp = (argv[i][0] == '1' || argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
         }
         else if (stricmp(argv[i], "-m") == 0 || stricmp(argv[i], "-commands") == 0)
         {
