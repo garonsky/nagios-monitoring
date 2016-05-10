@@ -26,7 +26,8 @@ Usage: hpcc-nagios-tools -env <environment file> -out <output path> [options]\n\
 Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\$\" -o /etc/nagios3/conf.d/hpcc1services.cfg -s -usernumwarn 10  -usernumcrit 15 -check_all_disks true\n\n";
     std::cout << "  -c or -cfggen <val>         : The path to the configgen.  (Default: /opt/HPCCSystems/sbin/configgen)\n";
     std::cout << "  -g or -hostgroup            : generate host group file\n";
-    std::cout << "  -s or -service              : generate service and host file\n";
+    std::cout << "  -s or -service              : generate service file\n";
+    std::cout << "  -t or -host                 : generate host file\n";
     std::cout << "  -n or -nrpe                 : generate client plugin cfgs for nrpe\n";
     std::cout << "  -e or -env <val>            : hpcc environment configuration file (Default: /etc/HPCCSystems/environment.xml)\n";
     std::cout << "  -ec or -escalation_cmds     : generate escalation commands\n";
@@ -81,24 +82,26 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_retain_status_information <val>   : retain_status_information (Default: " << CHPCCNagiosToolSet::m_nRetainStatusInformation << ")\n";
     std::cout << "  -override_retain_nonstatus_information <val>: retain_nonstatus_information (Default: " << CHPCCNagiosToolSet::m_nRetainNonStatusInformation << ")\n";
 
-    std::cout << "  -check_all_disks <true/false>   : enable/disable check_all_disks service check (Default: " << CHPCCNagiosToolSet::m_bCheckAllDisks << ")\n";
+    std::cout << "  -check_all_disks <0/1>          : enable/disable check_all_disks service check (Default: " << CHPCCNagiosToolSet::m_bCheckAllDisks << ")\n";
     std::cout << "  -override_check_all_disks <val> : check_all_disk plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckDiskSpace << ")\n";
 
-    std::cout << "  -check_users <true/false>       : enable/disable check_users service check (Default: " << CHPCCNagiosToolSet::m_bCheckUsers << ")\n";
+    std::cout << "  -check_users <0/1>              : enable/disable check_users service check (Default: " << CHPCCNagiosToolSet::m_bCheckUsers << ")\n";
     std::cout << "  -override_check_users <val>     : check_users plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckUsers << ")\n";
 
-    std::cout << "  -check_procs <true/false>       : enable/disable check_procs service check (Default: " << CHPCCNagiosToolSet::m_bCheckProcs << ")\n";
+    std::cout << "  -check_procs <0/1>              : enable/disable check_procs service check (Default: " << CHPCCNagiosToolSet::m_bCheckProcs << ")\n";
     std::cout << "  -override_check_procs <val>     : check_procs plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckProcs << ")\n";
     std::cout << "  -totalprocswarn <val>           : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
     std::cout << "  -totalprocscrit <val>           : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
 
 
-    std::cout << "  -check_load <true/false>        : enable/disable check_load service check (Default: " << CHPCCNagiosToolSet::m_bCheckLoad << ")\n";
+    std::cout << "  -check_load <0/1>               : enable/disable check_load service check (Default: " << CHPCCNagiosToolSet::m_bCheckLoad << ")\n";
     std::cout << "  -override_check_load <val>      : check_load plugin name  (Default: " << CHPCCNagiosToolSet::m_strCheckLoad << ")\n";
+
+    std::cout << "  -check_ssh <0/1>                : enable/disable ssh service check (Default: " << CHPCCNagiosToolSet::m_bCheckSSH << ")\n";
 
     std::cout << "  -set_catch_all_hostgroup <name> <alias> : create a hostgroup and include all nodes as memebers\n";
 
-    std::cout << "  -disable_use_of_note_for_host_port  : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
+    std::cout << "  -disable_use_of_note_for_host_port      : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
     std::cout << "  -use_https                      : use https connection for esp service calls (HIGHLY RECOMMENDED when using username/password)\n";
     std::cout << "  -d or -debug                    : verbose debug output\n\n";
 
@@ -116,7 +119,8 @@ int main(int argc, char *argv[])
     StringBuffer strURL;
     StringArray strEclWatchHostPortArray;
     bool bGenerateHostGroup                 = false;
-    bool bGenerateServiceAndHost            = false;
+    bool bGenerateService                   = false;
+    bool bGenerateHost                      = false;
     bool bGenerateNRPECommands              = false;
     bool bGenerateEscalationCommands        = false;
     bool bUseDetailForHostPort              = true;
@@ -150,7 +154,11 @@ int main(int argc, char *argv[])
         }
         else if (stricmp(argv[i], "-s") == 0 || stricmp(argv[i], "-service") == 0)
         {
-            bGenerateServiceAndHost = true;
+            bGenerateService = true;
+        }
+        else if (stricmp(argv[i], "-t") == 0 || stricmp(argv[i], "-host") == 0)
+        {
+            bGenerateHost = true;
         }
         else if (stricmp(argv[i], "-n") == 0 || stricmp(argv[i], "-nrpe") == 0)
         {
@@ -295,49 +303,49 @@ int main(int argc, char *argv[])
         {
             i++;
 
-            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            if (argv[i] == nullptr || *argv[i] == 0 || ((stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") && stricmp(argv[i], "0") != 0 && stricmp(argv[i], "1") != 0)))
             {
                 std::cout << "-check_all_disks flag has invalid parameter\n";
                 exit(1);
             }
 
-            CHPCCNagiosToolSet::m_bCheckAllDisks = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+            CHPCCNagiosToolSet::m_bCheckAllDisks = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
         }
         else if (stricmp(argv[i], "-check_users") == 0)
         {
             i++;
 
-            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && (stricmp(argv[i], "false") || stricmp(argv[i], "0") != 0 || stricmp(argv[i], "1")!= 0)))
             {
                 std::cout << "-check_users flag has invalid parameter\n";
                 exit(1);
             }
 
-            CHPCCNagiosToolSet::m_bCheckUsers = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+            CHPCCNagiosToolSet::m_bCheckUsers = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
         }
         else if (stricmp(argv[i], "-check_procs") == 0)
         {
             i++;
 
-            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && (stricmp(argv[i], "false") || stricmp(argv[i], "0") != 0 || stricmp(argv[i], "1")!= 0)))
             {
                 std::cout << "-check_procs flag has invalid parameter\n";
                 exit(1);
             }
 
-            CHPCCNagiosToolSet::m_bCheckProcs = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+            CHPCCNagiosToolSet::m_bCheckProcs = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
         }
         else if (stricmp(argv[i], "-check_load") == 0)
         {
             i++;
 
-            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && stricmp(argv[i], "false") != 0))
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && (stricmp(argv[i], "false") || stricmp(argv[i], "0") != 0 || stricmp(argv[i], "1")!= 0)))
             {
                 std::cout << "-check_load flag has invalid parameter\n";
                 exit(1);
             }
 
-            CHPCCNagiosToolSet::m_bCheckLoad = (argv[i][0] == 't' || argv[i][0] == 'T') ? true : false;
+            CHPCCNagiosToolSet::m_bCheckLoad = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
         }
         else if (stricmp(argv[i], "-sysload1warn") == 0)
         {
@@ -830,9 +838,9 @@ int main(int argc, char *argv[])
             std::cout << "Missing output file path! (-output)\n";
             return 0;
         }
-        else if ( bGenerateServiceAndHost + bGenerateHostGroup + bGenerateNRPECommands + bGenerateEscalationCommands!= 1) //(bGenerateServiceAndHost^bGenerateHostGroup)^bGenerateNRPECommands) == false)
+        else if ( bGenerateHost + bGenerateService + bGenerateHostGroup + bGenerateNRPECommands + bGenerateEscalationCommands!= 1) //(bGenerateServiceAndHost^bGenerateHostGroup)^bGenerateNRPECommands) == false)
         {
-            std::cout << "Select one (1) type of config per invocation (e.g. -hostgroup xor -service xor -nrpe xor -escalation_cmds)\n";
+            std::cout << "Select one (1) type of config per invocation (e.g. -hostgroup xor -service xor -nrpe xor -escalation_cmds xor -host xor -service)\n";
             return 0;
         }
         else if (bGenerateHostGroup == true)
@@ -846,14 +854,25 @@ int main(int argc, char *argv[])
                 return 0;
             }
         }
-        else if (bGenerateServiceAndHost == true)
+        else if (bGenerateService == true)
         {
-            std::cout << "Generating service and host config --> " << strOutputPath.str();
+            std::cout << "Generating service config --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateServiceConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
-                std::cout << "\nError generating service and host configuration!. Verify input.\n";
+                std::cout << "\nError generating service configuration!. Verify input.\n";
+                return 0;
+            }
+        }
+        else if (bGenerateHost == true)
+        {
+            std::cout << "Generating host config --> " << strOutputPath.str();
+            std::flush(std::cout);
+
+            if (CHPCCNagiosToolSet::generateHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
+            {
+                std::cout << "\nError generating host configuration!. Verify input.\n";
                 return 0;
             }
         }
@@ -862,12 +881,12 @@ int main(int argc, char *argv[])
             std::cout << "Generating nrpe client command config --> " << strOutputPath.str();
             std::flush(std::cout);
         }
-        else if ((bGenerateServiceAndHost^bGenerateHostGroup^bGenerateEscalationCommands) == false)
+        else if ((bGenerateService^bGenerateHost^bGenerateHostGroup^bGenerateEscalationCommands) == false)
         {
             std::cout << "Can only generate 1 type of config per invocation! (-hostgroup xor -service xor -escalation_cmds)\n";
             return 0;
         }
-        else if (bGenerateServiceAndHost == false && bGenerateHostGroup == false && bGenerateEscalationCommands == false)
+        else if (bGenerateService == false && bGenerateHostGroup == false && bGenerateEscalationCommands == false)
         {
             std::cout << "Nothing to generate! (-hostgroup xor -service)\n";
             return 0;
@@ -883,12 +902,12 @@ int main(int argc, char *argv[])
                 return 0;
             }
         }
-        else if (bGenerateServiceAndHost == true)
+        else if (bGenerateService == true)
         {
             std::cout << "Generating service and host config --> " << strOutputPath.str();
             std::flush(std::cout);
 
-            if (CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
+            if (CHPCCNagiosToolSet::generateServiceConfigurationFile(strOutputPath.str(), strEnvFilePath.length() == 0 ? nullptr : strEnvFilePath.str()) == false, strConfigGenPath.length() == 0 ? nullptr : strConfigGenPath.str())
             {
                 std::cout << "\nError generating service and host configuration! Verify input.\n";
                 return 0;

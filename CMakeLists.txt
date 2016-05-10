@@ -15,6 +15,8 @@ if( NOT BUILD_LEVEL )
 endif()
 ###
 
+set( BUILD_TAG "${projname}_${version}-${stagever}")
+
 set (HPCC_SOURCE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 IF ("${HPCC_SOURCE_DIR}" STREQUAL "")

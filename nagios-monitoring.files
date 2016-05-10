@@ -1,0 +1,8 @@
+commands/send_status/main.cpp
+hpcc-nagios-tools/HPCCNagiosToolSet.cpp
+hpcc-nagios-tools/HPCCNagiosToolSet.hpp
+hpcc-nagios-tools/HPCCNagiosToolSetCommon.hpp
+hpcc-nagios-tools/main.cpp
+utils/check_dafilesrv/main.cpp
+utils/check_dali/main.cpp
+utils/check_sasha/main.cpp

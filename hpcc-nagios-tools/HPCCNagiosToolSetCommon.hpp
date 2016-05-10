@@ -70,7 +70,7 @@ static constexpr const char P_NAGIOS_HOST_CONFIG_1[] = "define host{\n\
 static constexpr const char P_NAGIOS_HOST_CONFIG_ALIAS[] = "\n\
     alias                           ";
 static constexpr const char P_NAGIOS_HOST_CONFIG_ADDRESS[] = "\n\
-    constexpr                         ";
+    address                         ";
 static const char P_NAGIOS_HOST_DISPLAY_NAME[] = "\n\
     display_name                    ";
 static constexpr const char P_NAGIOS_HOST_CONFIG_END[] = "\n\

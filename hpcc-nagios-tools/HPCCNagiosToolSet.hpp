@@ -5,8 +5,8 @@
 #include "build-config.h"
 #include "jutil.hpp"
 
-static const char *PCONFIGGEN_PATH(ADMIN_DIR"/configgen");
-static const char *PENV_XML(CONFIG_DIR"/environment.xml");
+static const char *PCONFIGGEN_PATH(ADMIN_DIR "/configgen");
+static const char *PENV_XML(CONFIG_DIR "/environment.xml");
 
 class StringArray;
 class StringBuffer;
@@ -49,6 +49,7 @@ public:
     static bool m_bCheckUsers;
     static bool m_bCheckLoad;
     static bool m_bCheckProcs;
+    static bool m_bCheckSSH;
     static bool m_bEnableServiceEscalations;
     static bool m_bEnableHostEscalations;
     static bool m_bUseHTTPS;
@@ -113,11 +114,11 @@ public:
     static float m_fSystemLoad15Critical;
 
     static bool generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
-    static bool generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateServiceConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateEscalationCommandConfigurationFile(const char* pOutputFilePath, const StringArray &strEclWatchHostPortArray, const char* pUserMacro =  NULL,
                                                            const char* pPasswordMacro = NULL, bool bUseHTTPS = false, bool bAppendPortFromDetail = false,
                                                            const char *pURL = NULL, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
-
 protected:
 
     static bool generateNagiosEspServiceConfig(StringBuffer &strServiceConfig, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);

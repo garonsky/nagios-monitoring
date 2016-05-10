@@ -48,10 +48,11 @@ bool CHPCCNagiosToolSet::m_bVerbose                             = false;
 bool CHPCCNagiosToolSet::m_retryHostNameLookUp                  = false;
 bool CHPCCNagiosToolSet::m_bUseNPRE                             = false;
 bool CHPCCNagiosToolSet::m_bUseAuthentication                   = false;
-bool CHPCCNagiosToolSet::m_bCheckAllDisks                       = true;
-bool CHPCCNagiosToolSet::m_bCheckLoad                           = true;
-bool CHPCCNagiosToolSet::m_bCheckUsers                          = true;
-bool CHPCCNagiosToolSet::m_bCheckProcs                          = true;
+bool CHPCCNagiosToolSet::m_bCheckAllDisks                       = false;
+bool CHPCCNagiosToolSet::m_bCheckLoad                           = false;
+bool CHPCCNagiosToolSet::m_bCheckUsers                          = false;
+bool CHPCCNagiosToolSet::m_bCheckProcs                          = false;
+bool CHPCCNagiosToolSet::m_bCheckSSH                            = true;
 bool CHPCCNagiosToolSet::m_bEnableServiceEscalations            = false;
 bool CHPCCNagiosToolSet::m_bEnableHostEscalations               = false;
 bool CHPCCNagiosToolSet::m_bUseHTTPS                            = false;
@@ -487,7 +488,7 @@ bool CHPCCNagiosToolSet::generateEscalationCommandConfigurationFile(const char* 
     return true;
 }
 
-bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
+bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
     if (pOutputFilePath == NULL || *pOutputFilePath == 0)
     {
@@ -513,10 +514,10 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
         return false;
     }
 
-    StringBuffer strServiceConfig;
+    /*StringBuffer strServiceConfig;
     MapIPtoNode mapIPtoHostName;
     CHPCCNagiosHostEventHostConfig evHost(&strServiceConfig);
-    CHPCCNagiosToolSet::generateNagiosHostConfig(evHost, mapIPtoHostName, pEnvXML, pConfigGenPath);
+    CHPCCNagiosToolSet::generateNagiosHostConfig(evHost, mapIPtoHostName, pEnvXML, pConfigGenPath);*/
 
     int i = -1;
     char *pch = NULL;
@@ -557,6 +558,7 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
         CHPCCNagiosToolSet::m_strNRPE.set(P_CHECK_NRPE_1_ARG);
     }
 
+    StringBuffer strServiceConfig;
     CHPCCNagiosToolSet::generateNagiosEspServiceConfig(strServiceConfig, pEnvXML, pConfigGenPath);
     CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
     CHPCCNagiosToolSet::generateNagiosThorCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
@@ -565,17 +567,52 @@ bool CHPCCNagiosToolSet::generateServerAndHostConfigurationFile(const char* pOut
     CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
     CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(strServiceConfig, pEnvXML, pConfigGenPath);
 
-    CHPCCNagiosHostEventForSSH event(&strServiceConfig);
-    MapIPtoNode map;
-    CHPCCNagiosToolSet::generateNagiosHostConfig(event,map, pEnvXML, pConfigGenPath);
-
-    if (strServiceConfig.length() > 0)
+    if (CHPCCNagiosToolSet::m_bCheckSSH == true)
     {
-        appendHeader(strServiceConfig);
-        io->write(0, strServiceConfig.length(), strServiceConfig.str());
-    }
-    io->close();
+        CHPCCNagiosHostEventForSSH event(&strServiceConfig);
+        MapIPtoNode map;
+        CHPCCNagiosToolSet::generateNagiosHostConfig(event,map, pEnvXML, pConfigGenPath);
 
+        if (strServiceConfig.length() > 0)
+        {
+            appendHeader(strServiceConfig);
+            io->write(0, strServiceConfig.length(), strServiceConfig.str());
+        }
+    }
+
+    io->close();
+    free(pOutput);
+    return true;
+}
+
+bool CHPCCNagiosToolSet::generateHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
+{
+    if (pOutputFilePath == NULL || *pOutputFilePath == 0)
+        return false;
+
+    char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
+
+    if (pOutput == NULL)
+        return false;
+
+    OwnedIFile outputFile = createIFile(pOutputFilePath);
+    OwnedIFileIO io = outputFile->open(IFOcreaterw);
+
+    if (io == NULL)
+        return false;
+
+    MapIPtoNode mapIPtoHostName;
+    StringBuffer strHostConfig;
+    CHPCCNagiosHostEventHostConfig evHost(&strHostConfig);
+    CHPCCNagiosToolSet::generateNagiosHostConfig(evHost, mapIPtoHostName, pEnvXML, pConfigGenPath);
+
+    if (strHostConfig.length() > 0)
+    {
+        appendHeader(strHostConfig);
+        io->write(0, strHostConfig.length(), strHostConfig.str());
+    }
+
+    io->close();
     free(pOutput);
     return true;
 }
