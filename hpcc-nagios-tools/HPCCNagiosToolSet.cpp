@@ -286,7 +286,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -379,7 +379,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
         }
         else if (nCount % 6 == 2) // IP address
         {
-            hostent *hp;
+            hostent *hp = nullptr;
 
             memset(pHostName,0,sizeof(pHostName));
 
@@ -389,7 +389,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 if (strcmp(pch, pHostName) == 0)
@@ -728,7 +728,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -837,7 +837,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -940,7 +940,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1040,7 +1040,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1104,7 +1104,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1272,7 +1272,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1368,7 +1368,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1572,7 +1572,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL && m_bDoLookUp == true)
+            if (hp == NULL)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
