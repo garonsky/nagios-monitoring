@@ -53,6 +53,7 @@ public:
     static bool m_bEnableServiceEscalations;
     static bool m_bEnableHostEscalations;
     static bool m_bUseHTTPS;
+    static bool m_bDoLookUp;
 
     static StringBuffer m_strNRPE;
     static StringBuffer m_strSeparator;

@@ -42,8 +42,6 @@ constexpr const char *P_USE_HTTPS_FLAG(" -l ");
 constexpr const char *P_SET_DETAIL_URL_FLAG( " -r " );
 constexpr const char *P_SET_APPEND_PORT_FROM_DETAIL(" -g ");
 
-static bool bDoLookUp = true;
-
 bool CHPCCNagiosToolSet::m_bVerbose                             = false;
 bool CHPCCNagiosToolSet::m_retryHostNameLookUp                  = false;
 bool CHPCCNagiosToolSet::m_bUseNPRE                             = false;
@@ -56,6 +54,7 @@ bool CHPCCNagiosToolSet::m_bCheckSSH                            = true;
 bool CHPCCNagiosToolSet::m_bEnableServiceEscalations            = false;
 bool CHPCCNagiosToolSet::m_bEnableHostEscalations               = false;
 bool CHPCCNagiosToolSet::m_bUseHTTPS                            = false;
+bool CHPCCNagiosToolSet::m_bDoLookUp                           = false;
 StringBuffer CHPCCNagiosToolSet::m_strSeparator                 = "ip:";
 StringBuffer CHPCCNagiosToolSet::m_strNRPE                      = "";
 StringBuffer CHPCCNagiosToolSet::m_strUserMacro                 = "";
@@ -281,7 +280,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
             char pHostName[BUFFER_SIZE_3] = "";
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -289,7 +288,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -384,7 +383,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
 
             memset(pHostName,0,sizeof(pHostName));
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -392,7 +391,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 if (strcmp(pch, pHostName) == 0)
                 {
                     pch = strtok(NULL, ",\n");
@@ -723,7 +722,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -731,7 +730,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -832,7 +831,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -840,7 +839,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -935,7 +934,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -943,7 +942,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1035,7 +1034,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -1043,7 +1042,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1099,7 +1098,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -1107,7 +1106,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1267,7 +1266,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -1275,7 +1274,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1363,7 +1362,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -1371,7 +1370,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
@@ -1567,7 +1566,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
 
             struct hostent* hp = NULL;
 
-            if (bDoLookUp == true)
+            if (m_bDoLookUp == true)
             {
                 unsigned int addr = inet_addr(pch);
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
@@ -1575,7 +1574,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
 
             if (hp == NULL)
             {
-                bDoLookUp =  m_retryHostNameLookUp;
+                m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
             }
             else
