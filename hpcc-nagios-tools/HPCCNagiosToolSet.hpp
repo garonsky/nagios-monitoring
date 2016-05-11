@@ -54,6 +54,7 @@ public:
     static bool m_bEnableHostEscalations;
     static bool m_bUseHTTPS;
     static bool m_bDoLookUp;
+    static bool m_bCheckHost;
 
     static StringBuffer m_strNRPE;
     static StringBuffer m_strSeparator;
@@ -95,6 +96,7 @@ public:
     static StringBuffer m_strSendServiceStatus;
     static StringBuffer m_strSendHostStatus;
     static StringBuffer m_strDevNULL;
+    static StringBuffer m_strHostCheckCommand;
     static StringBuffer m_strServiceNotificatonCommand;
     static StringBuffer m_strHostNotificatonCommand;
     static StringBuffer m_strNotificationURL;

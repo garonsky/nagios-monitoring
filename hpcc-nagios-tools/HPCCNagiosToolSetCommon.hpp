@@ -55,7 +55,7 @@ define host {
         alias                   Server 02
         address                 172.18.100.101
         display_name            host
-
+        check_command           check-host-alive!!!!!!!!
         max_check_attempts      10
         check_period            24x7
         contacts                eclwatch
@@ -75,6 +75,8 @@ static const char P_NAGIOS_HOST_DISPLAY_NAME[] = "\n\
     display_name                    ";
 static constexpr const char P_NAGIOS_HOST_CONFIG_END[] = "\n\
 }\n";
+static constexpr const char P_NAGIOS_HOST_CHECK_COMMAND[] = "\n\
+    check_command                   ";
 static constexpr const char P_NAGIOS_HOST_CONFIG_MAX_CHECK_ATTEMPTS[] = "\n\
     max_check_attempts              ";
 static constexpr const char P_NAGIOS_HOST_CONFIG_CHECK_PERIOD[] = "\n\

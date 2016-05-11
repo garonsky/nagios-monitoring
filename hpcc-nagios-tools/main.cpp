@@ -34,7 +34,7 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -enable_host_notify         : enable host notifications (default: " << CHPCCNagiosToolSet::m_bEnableHostEscalations << ")\n";
     std::cout << "  -enable_service_notify      : enable service notifications (default: " << CHPCCNagiosToolSet::m_bEnableServiceEscalations << ")\n";
     std::cout << "  -set_url <val>              : set the url link for escalation notifications (Default " << CHPCCNagiosToolSet::m_strNotificationURL << "\n";
-    std::cout << "  -override_send_serivce_status <val> : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendServiceStatus << ")\n";
+    std::cout << "  -override_send_service_status <val> : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendServiceStatus << ")\n";
     std::cout << "  -override_send_host_status <val>    : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendHostStatus << ")\n";
     std::cout << "  -override_service_status <val>: override host_notification_commands (default: " << CHPCCNagiosToolSet::m_strServiceNotificatonCommand << ")\n";
     std::cout << "  -override_host_status <val>   : override service_notification_commands (default: " << CHPCCNagiosToolSet::m_strHostNotificatonCommand << ")\n";
@@ -101,9 +101,12 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -check_ssh <0/1>                : enable/disable ssh service check (Default: " << CHPCCNagiosToolSet::m_bCheckSSH << ")\n";
 
     std::cout << "  -set_catch_all_hostgroup <name> <alias> : create a hostgroup and include all nodes as memebers\n";
+    std::cout << "  -set_host_check_command         : set the check_command for hosts (Default: " << CHPCCNagiosToolSet::m_strHostCheckCommand << ")\n";
 
+    std::cout << "  -check_host <0/1>               : enable/disable check host check (Default: " << CHPCCNagiosToolSet::m_bCheckHost << ")\n";
     std::cout << "  -disable_use_of_note_for_host_port      : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
     std::cout << "  -use_https                      : use https connection for esp service calls (HIGHLY RECOMMENDED when using username/password)\n";
+    //std::cout << "  -set_cmd_root_path              : set root path for check utilities (Default: " << CHPCCNagiosToolSet::?? << ")\n";
     std::cout << "  -d or -debug                    : verbose debug output\n\n";
 
 
@@ -352,6 +355,44 @@ int main(int argc, char *argv[])
             }
 
             CHPCCNagiosToolSet::m_bCheckLoad = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
+        }
+        else if (stricmp(argv[i], "-check_ssh") == 0)
+        {
+            i++;
+
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && (stricmp(argv[i], "false") || stricmp(argv[i], "0") != 0 || stricmp(argv[i], "1")!= 0)))
+            {
+                std::cout << "-check_ssh flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckSSH = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
+        }
+        else if (stricmp(argv[i], "-check_host") == 0)
+        {
+            i++;
+
+            if (argv[i] == nullptr || *argv[i] == 0 || (stricmp(argv[i], "true") != 0 && (stricmp(argv[i], "false") || stricmp(argv[i], "0") != 0 || stricmp(argv[i], "1")!= 0)))
+            {
+                std::cout << "-check_host flag has invalid parameter\n";
+                exit(1);
+            }
+
+            CHPCCNagiosToolSet::m_bCheckHost = (argv[i][0] == 't' || argv[i][0] == 'T' || argv[i][0] == '1') ? true : false;
+        }
+        else if (stricmp(argv[i], "-set_host_check_command") == 0)
+        {
+            i++;
+
+            if (argv[i] != nullptr && *argv[i] != 0)
+            {
+                CHPCCNagiosToolSet::m_strHostCheckCommand.set(argv[i]);
+            }
+            else
+            {
+                std::cout << "invalid set_host_check_command value";
+                exit(1);
+            }
         }
         else if (stricmp(argv[i], "-sysload1warn") == 0)
         {

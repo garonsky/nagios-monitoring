@@ -54,7 +54,8 @@ bool CHPCCNagiosToolSet::m_bCheckSSH                            = true;
 bool CHPCCNagiosToolSet::m_bEnableServiceEscalations            = false;
 bool CHPCCNagiosToolSet::m_bEnableHostEscalations               = false;
 bool CHPCCNagiosToolSet::m_bUseHTTPS                            = false;
-bool CHPCCNagiosToolSet::m_bDoLookUp                           = false;
+bool CHPCCNagiosToolSet::m_bDoLookUp                            = false;
+bool CHPCCNagiosToolSet::m_bCheckHost                           = true;
 StringBuffer CHPCCNagiosToolSet::m_strSeparator                 = "ip:";
 StringBuffer CHPCCNagiosToolSet::m_strNRPE                      = "";
 StringBuffer CHPCCNagiosToolSet::m_strUserMacro                 = "";
@@ -92,6 +93,7 @@ StringBuffer CHPCCNagiosToolSet::m_strCheckDiskSpace            = "check_all_dis
 StringBuffer CHPCCNagiosToolSet::m_strCheckUsers                = "check_users";
 StringBuffer CHPCCNagiosToolSet::m_strCheckLoad                 = "check_load";
 StringBuffer CHPCCNagiosToolSet::m_strDevNULL                   = "";//{ "2> /dev/null/"};
+StringBuffer CHPCCNagiosToolSet::m_strHostCheckCommand          = "check-host-alive!!!!!!!!";
 StringBuffer CHPCCNagiosToolSet::m_strSendHostStatus            = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $HOSTSTATE$ -d '$HOSTNOTES$' -t $TIMET$ -n $HOSTDISPLAYNAME$";
 StringBuffer CHPCCNagiosToolSet::m_strSendServiceStatus         = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $SERVICESTATE$ -d '$SERVICENOTES$' -t $TIMET$ -n $SERVICEDISPLAYNAME$";
 
@@ -190,9 +192,13 @@ public:
                     .append(P_NAGIOS_SERVICE_FLAP_DETECTION_ENABLED).append(CHPCCNagiosToolSet::m_nFlapDetectionEnabled)\
                     .append(P_NAGIOS_SERVICE_FAILURE_PREDICTION_ENABLED).append(CHPCCNagiosToolSet::m_nFailurePredictionEnabled)\
                     .append(P_NAGIOS_HOST_CONFIG_MAX_CHECK_ATTEMPTS).append(CHPCCNagiosToolSet::m_uMaxCheckAttempts)\
-                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_strCheckPeriod)\
+                    .append(P_NAGIOS_HOST_CONFIG_CHECK_PERIOD).append(CHPCCNagiosToolSet::m_strCheckPeriod);\
 /*                    .append(P_NAGIOS_HOST_CONFIG_CONTACTS).append(CHPCCNagiosToolSet::m_pContacts)\*/
-                    .append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_strContactGroups)\
+
+            if (CHPCCNagiosToolSet::m_bCheckHost == true)
+                    m_pStrBuffer->append(P_NAGIOS_HOST_CONFIG_CONTACT_GROUPS).append(CHPCCNagiosToolSet::m_strContactGroups);
+
+            m_pStrBuffer->append(P_NAGIOS_HOST_CHECK_COMMAND).append(CHPCCNagiosToolSet::m_strHostCheckCommand)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_INTERVAL).append(CHPCCNagiosToolSet::m_nNotificationInterval)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATION_PERIOD).append(CHPCCNagiosToolSet::m_strNotificationPeriod)\
                     .append(P_NAGIOS_HOST_CONFIG_NOTIFICATIONS_ENABLED);
