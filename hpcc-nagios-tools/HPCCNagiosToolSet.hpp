@@ -25,7 +25,7 @@ public:
     virtual ~CHPCCNagiosHostEvent()
     {
     }
-    virtual void onHostEvent(const char *pHostName, int idx, const char* pToken, const char* pNote = NULL) = 0;
+    virtual void onHostEvent(const char *pHostName, int idx, const char* pToken, const char* pNote = nullptr) = 0;
 protected:
     StringBuffer *m_pStrBuffer;
     CHPCCNagiosHostEvent()
@@ -55,7 +55,10 @@ public:
     static bool m_bUseHTTPS;
     static bool m_bDoLookUp;
     static bool m_bCheckHost;
+    static bool m_bGenerateCatchAllHostGroup;
 
+    static StringBuffer m_CatchAllHostGroupName;
+    static StringBuffer m_CatchAllHostGroupAlias;
     static StringBuffer m_strNRPE;
     static StringBuffer m_strSeparator;
     static StringBuffer m_strUserMacro;
@@ -85,7 +88,6 @@ public:
     static int  m_nRetainNonStatusInformation;
     static int  m_nIsVolatile;
     static int  m_nNormalCheckInterval;
-    static int  m_nRetryCheckInterval;
     static int  m_nEnabled;
     static int  m_nDisabled;
 
@@ -95,7 +97,7 @@ public:
     static StringBuffer m_strCheckLoad;
     static StringBuffer m_strSendServiceStatus;
     static StringBuffer m_strSendHostStatus;
-    static StringBuffer m_strDevNULL;
+    static StringBuffer m_strDevNull;
     static StringBuffer m_strHostCheckCommand;
     static StringBuffer m_strServiceNotificatonCommand;
     static StringBuffer m_strHostNotificatonCommand;
@@ -119,9 +121,9 @@ public:
     static bool generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateServiceConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
-    static bool generateEscalationCommandConfigurationFile(const char* pOutputFilePath, const StringArray &strEclWatchHostPortArray, const char* pUserMacro =  NULL,
-                                                           const char* pPasswordMacro = NULL, bool bUseHTTPS = false, bool bAppendPortFromDetail = false,
-                                                           const char *pURL = NULL, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateEscalationCommandConfigurationFile(const char* pOutputFilePath, const StringArray &strEclWatchHostPortArray, const char* pUserMacro =  nullptr,
+                                                           const char* pPasswordMacro = nullptr, bool bUseHTTPS = false, bool bAppendPortFromDetail = false,
+                                                           const char *pURL = nullptr, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
 protected:
 
     static bool generateNagiosEspServiceConfig(StringBuffer &strServiceConfig, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
@@ -135,13 +137,13 @@ protected:
     static bool generateNagiosNRPEClientConfig(CHPCCNagiosHostEvent &evHost, MapIPtoNode &mapIPtoHostName, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
     static bool generateNagiosServiceEscalationConfig(StringBuffer &strServiceConfig, const char* pDisplayName, const char* pNote);
     static bool generateNagiosHostEscalationConfig(StringBuffer &strServiceConfig);
-    static bool generateNagiosEscalationCommandConfig(StringBuffer &strCommandConfig, const StringArray &strEclWatchHostPortArray, const char *pUserMacro = NULL,
-                                                      const char* pPasswordMacro = NULL, bool bUseHTTPS = false, bool bAppendHostPortFromDetail = false,
-                                                      const char *pURL = NULL, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
+    static bool generateNagiosEscalationCommandConfig(StringBuffer &strCommandConfig, const StringArray &strEclWatchHostPortArray, const char *pUserMacro = nullptr,
+                                                      const char* pPasswordMacro = nullptr, bool bUseHTTPS = false, bool bAppendHostPortFromDetail = false,
+                                                      const char *pURL = nullptr, const char* pEnvXML = PENV_XML, const char* pConfigGenPath = PCONFIGGEN_PATH);
 
 private:
 
-    static char* invokeConfigGen(const char* pEnvXML, const char* pConfigGenPath, const char *pCmd = P_CONFIGGEN_PARAM_LIST_ALL, const char *pType = NULL, const char *pCmdSuffix = "");
+    static char* invokeConfigGen(const char* pEnvXML, const char* pConfigGenPath, const char *pCmd = P_CONFIGGEN_PARAM_LIST_ALL, const char *pType = nullptr, const char *pCmdSuffix = "");
     static bool getConfigGenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, StringBuffer &strBuff);
     static bool addCommonParamsToSendStatus(StringBuffer &strCommandConfig, const char* pUserMacro, const char* pPasswordMacro, const bool bUseHTTPS, const bool bAppendHostPortFromDetail,
                                             const char  *pURL);

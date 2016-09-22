@@ -26,6 +26,7 @@
 #include "XMLTags.h"
 #include <iostream>
 #include <ctime>
+#include "jutil.hpp"
 
 #define BUFFER_SIZE_3 1024
 
@@ -56,6 +57,9 @@ bool CHPCCNagiosToolSet::m_bEnableHostEscalations               = false;
 bool CHPCCNagiosToolSet::m_bUseHTTPS                            = false;
 bool CHPCCNagiosToolSet::m_bDoLookUp                            = false;
 bool CHPCCNagiosToolSet::m_bCheckHost                           = true;
+bool CHPCCNagiosToolSet::m_bGenerateCatchAllHostGroup           = false;
+StringBuffer CHPCCNagiosToolSet::m_CatchAllHostGroupName        = "";
+StringBuffer CHPCCNagiosToolSet::m_CatchAllHostGroupAlias       = "";
 StringBuffer CHPCCNagiosToolSet::m_strSeparator                 = "ip:";
 StringBuffer CHPCCNagiosToolSet::m_strNRPE                      = "";
 StringBuffer CHPCCNagiosToolSet::m_strUserMacro                 = "";
@@ -86,13 +90,12 @@ int  CHPCCNagiosToolSet::m_nRetainStatusInformation             = CHPCCNagiosToo
 int  CHPCCNagiosToolSet::m_nRetainNonStatusInformation          = CHPCCNagiosToolSet::m_nDisabled;
 int  CHPCCNagiosToolSet::m_nIsVolatile                          = CHPCCNagiosToolSet::m_nDisabled;
 int  CHPCCNagiosToolSet::m_nNormalCheckInterval                 = 1;
-int  CHPCCNagiosToolSet::m_nRetryCheckInterval                  = 1;
 
 StringBuffer CHPCCNagiosToolSet::m_strCheckProcs                = "check_procs";
 StringBuffer CHPCCNagiosToolSet::m_strCheckDiskSpace            = "check_all_disks";
 StringBuffer CHPCCNagiosToolSet::m_strCheckUsers                = "check_users";
 StringBuffer CHPCCNagiosToolSet::m_strCheckLoad                 = "check_load";
-StringBuffer CHPCCNagiosToolSet::m_strDevNULL                   = "";//{ "2> /dev/null/"};
+StringBuffer CHPCCNagiosToolSet::m_strDevNull                   = "";//{ "2> /dev/null/"};
 StringBuffer CHPCCNagiosToolSet::m_strHostCheckCommand          = "check-host-alive!!!!!!!!";
 StringBuffer CHPCCNagiosToolSet::m_strSendHostStatus            = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $HOSTSTATE$ -d '$HOSTNOTES$' -t $TIMET$ -n $HOSTDISPLAYNAME$";
 StringBuffer CHPCCNagiosToolSet::m_strSendServiceStatus         = EXEC_DIR "/send_status -o $HOSTADDRESS$ -s $SERVICESTATE$ -d '$SERVICENOTES$' -t $TIMET$ -n $SERVICEDISPLAYNAME$";
@@ -125,12 +128,12 @@ public:
     {
         StringBuffer strNote;
 
-        if (pNote != NULL)
+        if (pNote != nullptr)
         {
             strNote.set(pNote);
         }
 
-        if (pHostName == NULL || *pHostName == 0)
+        if (pHostName == nullptr || *pHostName == 0)
         {
             return;
         }
@@ -172,12 +175,12 @@ public:
     {
         StringBuffer strNote;
 
-        if (pNote != NULL)
+        if (pNote != nullptr)
         {
             strNote.set(pNote);
         }
 
-        if (pHostName == NULL || *pHostName == 0)
+        if (pHostName == nullptr || *pHostName == 0)
         {
             return;
         }
@@ -233,12 +236,12 @@ public:
     {
         StringBuffer strNote;
 
-        if (pNote != NULL)
+        if (pNote != nullptr)
         {
             strNote.set(pNote);
         }
 
-        if (pHostName == NULL || *pHostName == 0)
+        if (pHostName == nullptr || *pHostName == 0)
         {
             return;
         }
@@ -268,23 +271,23 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
 {
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_MACHINES);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
 
     int nCount = 0;
 
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
 
     int i = 0;
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % 2 ==  0) // Process name
         {
             char pHostName[BUFFER_SIZE_3] = "";
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -292,7 +295,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -313,7 +316,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
             i++;
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -325,7 +328,7 @@ bool CHPCCNagiosToolSet::generateNagiosHostConfig(CHPCCNagiosHostEvent &evHost, 
 
 bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pOutputFilePath == NULL || *pOutputFilePath == 0 || checkFileExists(pConfigGenPath) == false)
+    if (pOutputFilePath == nullptr || *pOutputFilePath == 0 || checkFileExists(pConfigGenPath) == false)
     {
         return false;
     }
@@ -336,7 +339,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
         std::cout << "\nOutput:\n" << pOutput << "\n";
     }
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -344,7 +347,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
     OwnedIFile outputFile = createIFile(pOutputFilePath);
     OwnedIFileIO io = outputFile->open(IFOcreaterw);
 
-    if (io == NULL)
+    if (io == nullptr)
     {
         return false;
     }
@@ -352,18 +355,20 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
     int nCount = 0;
     char pProcess[BUFFER_SIZE_3] = "";
     bool bAdd = false;
-    char *pch = NULL;
+    char *pch = nullptr;
     char pHostName[BUFFER_SIZE_3] = "";
     StringBuffer strHostConfig;
+    StringArray arrIPs;
+
     int i = 0;
 
     pch = strtok(pOutput, ",\n");
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % 6 ==  0) // Process name
         {
-            if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strHostConfig.append(P_NAGIOS_HOSTS_GROUP_END_BRACKET);
                 strHostConfig.append("\n");
@@ -371,7 +376,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
                 bAdd = true;
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 bAdd = true;
@@ -400,7 +405,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 if (strcmp(pch, pHostName) == 0)
                 {
-                    pch = strtok(NULL, ",\n");
+                    pch = strtok(nullptr, ",\n");
                     nCount++;
 
                     continue;
@@ -411,7 +416,7 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
             {
                 if (strcmp(pch, pHostName) == 0)
                 {
-                    pch = strtok(NULL, ",\n");
+                    pch = strtok(nullptr, ",\n");
                     nCount++;
 
                     continue;
@@ -437,17 +442,39 @@ bool CHPCCNagiosToolSet::generateHostGroupsConfigurationFile(const char* pOutput
                     strcpy(pLastHostName,pHostName);
                 }
             }
+            arrIPs.appendUniq(pHostName);
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
 
     if (strHostConfig.length() > 0)
     {
-        appendHeader(strHostConfig);        
-        strHostConfig.append(P_NAGIOS_HOSTS_GROUP_END_BRACKET);
+        if (m_bGenerateCatchAllHostGroup)
+        {
+            strHostConfig.clear();
+            appendHeader(strHostConfig);
+
+            int len = arrIPs.length();
+            strHostConfig.append(P_NAGIOS_HOSTS_GROUP_CONFIG_1).append(CHPCCNagiosToolSet::m_CatchAllHostGroupName).append(P_NAGIOS_HOSTS_GROUP_ALIAS).append(CHPCCNagiosToolSet::m_CatchAllHostGroupAlias).append(P_NAGIOS_HOSTS_GROUP_MEMBERS);
+
+            while (len > 0)
+            {
+                strHostConfig.append(arrIPs[--len]);
+
+                if (len == 0)
+                    strHostConfig.append(P_NAGIOS_HOSTS_GROUP_END_BRACKET);
+                else
+                    strHostConfig.append(", ");
+            }
+        }
+        else
+        {
+            appendHeader(strHostConfig);
+            strHostConfig.append(P_NAGIOS_HOSTS_GROUP_END_BRACKET);
+        }
 
         io->write(0, strHostConfig.length(), strHostConfig.str());
     }
@@ -478,7 +505,7 @@ bool CHPCCNagiosToolSet::generateEscalationCommandConfigurationFile(const char* 
     OwnedIFile outputFile = createIFile(pOutputFilePath);
     OwnedIFileIO io = outputFile->open(IFOcreaterw);
 
-    if (io == NULL)
+    if (io == nullptr)
     {
         return false;
     }
@@ -495,14 +522,14 @@ bool CHPCCNagiosToolSet::generateEscalationCommandConfigurationFile(const char* 
 
 bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pOutputFilePath == NULL || *pOutputFilePath == 0)
+    if (pOutputFilePath == nullptr || *pOutputFilePath == 0)
     {
         return false;
     }
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -514,21 +541,16 @@ bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFil
     OwnedIFile outputFile = createIFile(pOutputFilePath);
     OwnedIFileIO io = outputFile->open(IFOcreaterw);
 
-    if (io == NULL)
+    if (io == nullptr)
     {
         return false;
     }
 
-    /*StringBuffer strServiceConfig;
-    MapIPtoNode mapIPtoHostName;
-    CHPCCNagiosHostEventHostConfig evHost(&strServiceConfig);
-    CHPCCNagiosToolSet::generateNagiosHostConfig(evHost, mapIPtoHostName, pEnvXML, pConfigGenPath);*/
-
     int i = -1;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -537,12 +559,12 @@ bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFil
             {
                 i++;
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -553,7 +575,7 @@ bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFil
             }
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -592,18 +614,18 @@ bool CHPCCNagiosToolSet::generateServiceConfigurationFile(const char* pOutputFil
 
 bool CHPCCNagiosToolSet::generateHostConfigurationFile(const char* pOutputFilePath, const char* pEnvXML, const char* pConfigGenPath)
 {
-    if (pOutputFilePath == NULL || *pOutputFilePath == 0)
+    if (pOutputFilePath == nullptr || *pOutputFilePath == 0)
         return false;
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
         return false;
 
     OwnedIFile outputFile = createIFile(pOutputFilePath);
     OwnedIFileIO io = outputFile->open(IFOcreaterw);
 
-    if (io == NULL)
+    if (io == nullptr)
         return false;
 
     MapIPtoNode mapIPtoHostName;
@@ -624,12 +646,12 @@ bool CHPCCNagiosToolSet::generateHostConfigurationFile(const char* pOutputFilePa
 
 bool CHPCCNagiosToolSet::getConfigGenOutput(const char* pEnvXML, const char* pConfigGenPath, const char* pCommandLine, StringBuffer &strBuff)
 {
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
+    if (pConfigGenPath == nullptr || *pConfigGenPath == 0)
     {
         pConfigGenPath = PCONFIGGEN_PATH;
     }
 
-    if (pEnvXML == NULL || *pEnvXML == 0)
+    if (pEnvXML == nullptr || *pEnvXML == 0)
     {
         pEnvXML = PENV_XML;
     }
@@ -682,7 +704,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strPort;
     StringBuffer strIPAddress;
@@ -690,7 +712,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
     char pServiceName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % 7 ==  0) // Process type
         {
@@ -699,12 +721,12 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
                 free(pOutput);
                 return false;  // expecting only EspProcess
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -726,7 +748,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -734,7 +756,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -772,7 +794,7 @@ bool CHPCCNagiosToolSet::generateNagiosEspServiceConfig(StringBuffer &strService
             strServiceConfig.appendf("%s\n", P_NAGIOS_SERVICE_END_BRACKET);
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -788,7 +810,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_DALI);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -796,14 +818,14 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strPort;
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -812,12 +834,12 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
                 free(pOutput);
                 return false;  // expecting only Dali
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -835,7 +857,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
         {
             strIPAddress.set(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -843,7 +865,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -875,7 +897,7 @@ bool CHPCCNagiosToolSet::generateNagiosDaliCheckConfig(StringBuffer &strServiceC
             strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -891,7 +913,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_SASHA);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -899,14 +921,14 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strPort;
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -915,12 +937,12 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
                 free(pOutput);
                 return false;  // expecting only sasha
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -938,7 +960,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -946,7 +968,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -977,7 +999,7 @@ bool CHPCCNagiosToolSet::generateNagiosSashaCheckConfig(StringBuffer &strService
             strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -992,7 +1014,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
     const int nNumValues = 5;
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_ROXIE);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -1000,13 +1022,13 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -1015,12 +1037,12 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
                 free(pOutput);
                 return false;  // expecting only roxie
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -1038,7 +1060,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -1046,7 +1068,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1069,7 +1091,7 @@ bool CHPCCNagiosToolSet::generateNagiosRoxieCheckConfig(StringBuffer &strService
             strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -1084,25 +1106,25 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
     const int nNumValues = 2;
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_MACHINES);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
 
     int i = -1;
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues == 0) // IP Address
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -1110,7 +1132,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1199,7 +1221,7 @@ bool CHPCCNagiosToolSet::generateNagiosSystemCheckConfig(StringBuffer &strServic
             }
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -1215,20 +1237,20 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_THOR);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
         return false;
 
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strPort;
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -1241,12 +1263,12 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
             {
                 for (int i = 0; i < nNumValues; i++)
                 {
-                    pch = strtok(NULL, ",\n");
+                    pch = strtok(nullptr, ",\n");
                     nCount++;
                 }
                 continue;
             }
-            else if (pProcess != NULL && *pProcess != 0)
+            else if (pProcess != nullptr && *pProcess != 0)
             {
                 if (strcmp(pProcess, pch) != 0)
                 {
@@ -1270,7 +1292,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -1278,7 +1300,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1304,7 +1326,7 @@ bool CHPCCNagiosToolSet::generateNagiosThorCheckConfig(StringBuffer &strServiceC
             strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -1320,7 +1342,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 
     char *pOutput = CHPCCNagiosToolSet::invokeConfigGen(pEnvXML, pConfigGenPath, P_CONFIGGEN_PARAM_LIST_ALL, P_DAFILESRV);
 
-    if (pOutput == NULL)
+    if (pOutput == nullptr)
     {
         return false;
     }
@@ -1328,13 +1350,13 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strIPAddress;
     char pHostName[BUFFER_SIZE_3] = "";
     char pProcessName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % nNumValues ==  0) // Process name
         {
@@ -1343,12 +1365,12 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
                 free(pOutput);
                 return false;  // expecting only dafilesrvprocess
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -1366,7 +1388,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -1374,7 +1396,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1397,7 +1419,7 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
             strServiceConfig.append(P_NAGIOS_SERVICE_END_BRACKET).append("\n");
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -1409,19 +1431,19 @@ bool CHPCCNagiosToolSet::generateNagiosDafileSrvCheckConfig(StringBuffer &strSer
 
 char* CHPCCNagiosToolSet::invokeConfigGen(const char* pEnvXML, const char* pConfigGenPath, const char *pCmd, const char *pType, const char *pCmdSuffix)
 {
-    if (pConfigGenPath == NULL || *pConfigGenPath == 0)
+    if (pConfigGenPath == nullptr || *pConfigGenPath == 0)
     {
         pConfigGenPath = PCONFIGGEN_PATH;
     }
 
-    if (pEnvXML == NULL || *pEnvXML == 0)
+    if (pEnvXML == nullptr || *pEnvXML == 0)
     {
         pEnvXML = PENV_XML;
     }
 
-    if (pCmd == NULL || *pCmd == 0 || checkFileExists(pConfigGenPath) == false)
+    if (pCmd == nullptr || *pCmd == 0 || checkFileExists(pConfigGenPath) == false)
     {
-        return NULL;
+        return nullptr;
     }
 
     StringBuffer strBuff;
@@ -1429,11 +1451,11 @@ char* CHPCCNagiosToolSet::invokeConfigGen(const char* pEnvXML, const char* pConf
 
     strConfigGenCmdLine.append(pCmd).append(P_CONFIGGEN_PARAM_ENVIRONMENT).append(pEnvXML);
 
-    if (pType != NULL && *pType != 0)
+    if (pType != nullptr && *pType != 0)
     {
         strConfigGenCmdLine.append(P_BY_TYPE).append(pType);
     }
-    if (pCmdSuffix != NULL && *pCmdSuffix != 0)
+    if (pCmdSuffix != nullptr && *pCmdSuffix != 0)
     {
         strConfigGenCmdLine.append(pCmdSuffix);
     }
@@ -1448,7 +1470,7 @@ char* CHPCCNagiosToolSet::invokeConfigGen(const char* pEnvXML, const char* pConf
 
     strBuff.replaceString(",,",",X,"); // sttrok pecularity with adjacent delimiters
 
-    if (pType == NULL || *pType == 0)
+    if (pType == nullptr || *pType == 0)
     {
         strBuff.replaceString(",\n",",X\n"); // sttrok pecularity with adjacent delimiters
     }
@@ -1500,8 +1522,6 @@ bool CHPCCNagiosToolSet::generateNagiosServiceEscalationConfig(StringBuffer &str
     strServiceConfig.append(P_NAGIOS_SERVICE_NOTIFICATION_INTERVAL).append(m_nNotificationInterval);
     strServiceConfig.append(P_NAGIOS_SERVICE_IS_VOLATILE).append(m_nIsVolatile);
     strServiceConfig.append(P_NAGIOS_SERVICE_NORMAL_CHECK_INTERVAL).append(m_nNormalCheckInterval);
-    //strServiceConfig.append(P_NAGIOS_SERVICE_RETRY_CHECK_INTERVAL).append(m_nRetryCheckInterval);
-
 
     return true;
 }
@@ -1524,14 +1544,14 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
     int i = -1;
     char pProcess[BUFFER_SIZE_3] = "";
     int nCount = 0;
-    char *pch = NULL;
+    char *pch = nullptr;
     pch = strtok(pOutput, ",\n");
     StringBuffer strPort;
     StringBuffer strIPAddress;
     StringArray strArrayIPPort;
     char pHostName[BUFFER_SIZE_3] = "";
 
-    while (pch != NULL)
+    while (pch != nullptr)
     {
         if (nCount % 7 ==  0) // Process type
         {
@@ -1540,12 +1560,12 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
                 free(pOutput);
                 return false;  // expecting only EspProcess
             }
-            else if (pProcess != NULL && *pProcess != 0 && strcmp(pProcess, pch) != 0)
+            else if (pProcess != nullptr && *pProcess != 0 && strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i = 0;
             }
-            else if (pProcess == NULL || *pProcess == 0 || strcmp(pProcess, pch) != 0)
+            else if (pProcess == nullptr || *pProcess == 0 || strcmp(pProcess, pch) != 0)
             {
                 strncpy(pProcess, pch, sizeof(pProcess));
                 i++;
@@ -1561,7 +1581,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
             {
                 for (int c = 0; c < 4; c++)
                 {
-                    pch = strtok(NULL, ",\n");
+                    pch = strtok(nullptr, ",\n");
                     nCount++;
                 }
             }
@@ -1570,7 +1590,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
         {
             strIPAddress.clear().append(pch);
 
-            struct hostent* hp = NULL;
+            struct hostent* hp = nullptr;
 
             if (m_bDoLookUp == true)
             {
@@ -1578,7 +1598,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
                 hp = gethostbyaddr((const char*)&addr, sizeof(addr), AF_INET);
             }
 
-            if (hp == NULL)
+            if (hp == nullptr)
             {
                 m_bDoLookUp =  m_retryHostNameLookUp;
                 strcpy(pHostName, pch);
@@ -1599,7 +1619,7 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
             strArrayIPPort.append(strTemp.str());
         }
 
-        pch = strtok(NULL, ",\n");
+        pch = strtok(nullptr, ",\n");
 
         nCount++;
     }
@@ -1658,11 +1678,11 @@ bool CHPCCNagiosToolSet::generateNagiosEscalationCommandConfig(StringBuffer &str
 bool CHPCCNagiosToolSet::addCommonParamsToSendStatus(StringBuffer &strCommandConfig, const char* pUserMacro, const char* pPasswordMacro, const bool bUseHTTPS, const bool bAppendHostPortFromDetail,
                                                      const char  *pURL)
 {
-    if (pUserMacro != NULL && *pUserMacro != 0)
+    if (pUserMacro != nullptr && *pUserMacro != 0)
     {
         strCommandConfig.append(P_USER_MACRO_FLAG).append(pUserMacro);
     }
-    if (pPasswordMacro != NULL && *pPasswordMacro != 0)
+    if (pPasswordMacro != nullptr && *pPasswordMacro != 0)
     {
         strCommandConfig.append(P_PASSWORD_MACRO_FLAG).append(pPasswordMacro);
     }
@@ -1675,7 +1695,7 @@ bool CHPCCNagiosToolSet::addCommonParamsToSendStatus(StringBuffer &strCommandCon
         strCommandConfig.append(P_SET_APPEND_PORT_FROM_DETAIL); // if we provide a port in the detail we can
                                                                 // append the port to the host to generate a more unique key for notificaiton and push to HPCC
     }
-    if (pURL != NULL && pURL[0] != 0)
+    if (pURL != nullptr && pURL[0] != 0)
     {
         strCommandConfig.append(P_SET_DETAIL_URL_FLAG).append(pURL).append("\n");
     }
@@ -1705,11 +1725,11 @@ const char* CHPCCNagiosToolSet::getEspPassword(const char *pEspName, const char*
 void CHPCCNagiosToolSet::appendHeader(StringBuffer &strBuffer)
 {
     char currTime[1024];\
-    time_t t = time(NULL);\
+    time_t t = time(nullptr);\
     struct tm* now = localtime(&t);\
     strftime(currTime, sizeof(currTime), "%Y-%m-%d %H:%M:%S", now);\
     StringBuffer strTemp;\
-    strTemp.setf("#\n# Auto-Generated by hpcc-nagios-tools (%d.%d.%d) on %s\n# Parameters Used: %s\n#\n%s", BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_POINT,\
+    strTemp.setf("#\n# Auto-Generated by hpcc-nagios-tools (%d.%d.%d) on %s\n# Parameters Used: %s\n# ** Parameters may need to be escaped or have added quotes to work\n#\n%s", BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_POINT,\
                  currTime, m_strCommandLine.str(), strBuffer.str());
     strBuffer.set(strTemp.str());
 }

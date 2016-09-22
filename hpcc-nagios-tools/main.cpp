@@ -38,7 +38,7 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_send_host_status <val>    : override send_status escalation command (default: " << CHPCCNagiosToolSet::m_strSendHostStatus << ")\n";
     std::cout << "  -override_service_status <val>: override host_notification_commands (default: " << CHPCCNagiosToolSet::m_strServiceNotificatonCommand << ")\n";
     std::cout << "  -override_host_status <val>   : override service_notification_commands (default: " << CHPCCNagiosToolSet::m_strHostNotificatonCommand << ")\n";
-    std::cout << "  -override_eclwatch_host_port: override eclwatch host port for escalation commands.  (May be specified multiple times)\n";
+    std::cout << "  -override_eclwatch_host_port: override eclwatch host port for escalation commands.  (May be specified more than 1x)\n";
     std::cout << "  -o or -output <val>         : outpfile where the generated configuration will be written\n";
     std::cout << "  -r or -retry                : keep attempting to resolve IP to hostnames (Default: will stop resolution after 1st failure)\n";
     std::cout << "  -lookup <0/1>               : look up hostname form ip (Default: " << CHPCCNagiosToolSet::m_bDoLookUp << ")\n";
@@ -62,11 +62,7 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -contactgroups <val>        : host contact groups (Default: " << CHPCCNagiosToolSet::m_strContactGroups << ")\n";
     std::cout << "  -notify_interval <val>      : set notification interval (Default: " << CHPCCNagiosToolSet::m_nNotificationInterval << ")\n";
     std::cout << "  -notify_period <val>        : set notification period (Default: " << CHPCCNagiosToolSet::m_strNotificationPeriod << ")\n";
-    std::cout << "  -set_esp_username_pw <esp name> <username> <password> : set specific logins credentials for esp checks.  All fields are required. Can be specified more than 1x\n";
-
-
-
-
+    std::cout << "  -set_esp_username_pw <esp name> <username> <password> : set specific logins credentials for esp checks.  All fields are required. (Can be specified more than 1x)\n";
     std::cout << "  -override_retry_interval <val>          : check retry_interval (Default: " << CHPCCNagiosToolSet::m_nRetryInteval << ")\n";
     std::cout << "  -override_active_checks_enabled <val>   : active_checks (Default: " << CHPCCNagiosToolSet::m_nActiveChecksEnabled << ")\n";
     std::cout << "  -override_passive_checks_enabled <val>  : passive_checks (Default: " << CHPCCNagiosToolSet::m_nPassiveChecksEnabled << ")\n";
@@ -76,40 +72,28 @@ Usage: hpcc-nagios-tools -env /tmp/env190.xml -u \"\\$USER3\\$\" -p \"\\$USER4\\
     std::cout << "  -override_event_handler_enabled <val>   : event_handler_enabled (Default: " << CHPCCNagiosToolSet::m_nEventHandlerEnabled << ")\n";
     std::cout << "  -override_is_volatile <val>             : is_volatile (Default: " << CHPCCNagiosToolSet::m_nIsVolatile << ")\n";
     std::cout << "  -override_normal_check_interval <val>   : normal_check_interval (Default: " << CHPCCNagiosToolSet::m_nNormalCheckInterval << ")\n";
-    //std::cout << "  -override_retry_check_interval <val>    : retry_check_interval (Default: " << CHPCCNagiosToolSet::m_nRetryCheckInterval << ")\n";
     std::cout << "  -override_flap_detection_enabled <val>  : flap_detection_enabled (Default: " << CHPCCNagiosToolSet::m_nFlapDetectionEnabled << ")\n";
     std::cout << "  -override_process_perf_data <val>       : process_perf_data (Default: " << CHPCCNagiosToolSet::m_nProcessPerfData << ")\n";
     std::cout << "  -override_failure_prediction_enabled <val>  : failure_prediction_enabled (Default: " << CHPCCNagiosToolSet::m_nFailurePredictionEnabled << ")\n";
     std::cout << "  -override_retain_status_information <val>   : retain_status_information (Default: " << CHPCCNagiosToolSet::m_nRetainStatusInformation << ")\n";
     std::cout << "  -override_retain_nonstatus_information <val>: retain_nonstatus_information (Default: " << CHPCCNagiosToolSet::m_nRetainNonStatusInformation << ")\n";
-
     std::cout << "  -check_all_disks <0/1>          : enable/disable check_all_disks service check (Default: " << CHPCCNagiosToolSet::m_bCheckAllDisks << ")\n";
     std::cout << "  -override_check_all_disks <val> : check_all_disk plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckDiskSpace << ")\n";
-
     std::cout << "  -check_users <0/1>              : enable/disable check_users service check (Default: " << CHPCCNagiosToolSet::m_bCheckUsers << ")\n";
     std::cout << "  -override_check_users <val>     : check_users plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckUsers << ")\n";
-
     std::cout << "  -check_procs <0/1>              : enable/disable check_procs service check (Default: " << CHPCCNagiosToolSet::m_bCheckProcs << ")\n";
     std::cout << "  -override_check_procs <val>     : check_procs plugin name (Default: " << CHPCCNagiosToolSet::m_strCheckProcs << ")\n";
     std::cout << "  -totalprocswarn <val>           : total process warning threshold   (Default: " << CHPCCNagiosToolSet::m_nTotalProcsWarning << ")\n";
     std::cout << "  -totalprocscrit <val>           : total process critical threshold  (Default: " << CHPCCNagiosToolSet::m_nTotalProcsCritical << ")\n";
-
-
     std::cout << "  -check_load <0/1>               : enable/disable check_load service check (Default: " << CHPCCNagiosToolSet::m_bCheckLoad << ")\n";
     std::cout << "  -override_check_load <val>      : check_load plugin name  (Default: " << CHPCCNagiosToolSet::m_strCheckLoad << ")\n";
-
     std::cout << "  -check_ssh <0/1>                : enable/disable ssh service check (Default: " << CHPCCNagiosToolSet::m_bCheckSSH << ")\n";
-
     std::cout << "  -set_catch_all_hostgroup <name> <alias> : create a hostgroup and include all nodes as memebers\n";
     std::cout << "  -set_host_check_command         : set the check_command for hosts (Default: " << CHPCCNagiosToolSet::m_strHostCheckCommand << ")\n";
-
     std::cout << "  -check_host <0/1>               : enable/disable check host check (Default: " << CHPCCNagiosToolSet::m_bCheckHost << ")\n";
-    std::cout << "  -disable_use_of_note_for_host_port      : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
+    std::cout << "  -disable_use_of_note_for_host_port  : the send command will use the detail/note for host:ip instead of param (Default: true) \n";
     std::cout << "  -use_https                      : use https connection for esp service calls (HIGHLY RECOMMENDED when using username/password)\n";
-    //std::cout << "  -set_cmd_root_path              : set root path for check utilities (Default: " << CHPCCNagiosToolSet::?? << ")\n";
     std::cout << "  -d or -debug                    : verbose debug output\n\n";
-
-
 }
 
 int main(int argc, char *argv[])
@@ -767,8 +751,7 @@ int main(int argc, char *argv[])
             CHPCCNagiosToolSet::m_nEventHandlerEnabled = atoi(argv[i]);
         }
         else if (stricmp(argv[i], "-override_is_volatile") == 0)
-        {
-            i++;
+        {            i++;
 
             if (argv[i] == nullptr || *argv[i] == 0)
             {
@@ -787,17 +770,6 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             CHPCCNagiosToolSet::m_nNormalCheckInterval = atoi(argv[i]);
-        }
-        else if (stricmp(argv[i], "-override_retry_check_interval") == 0)
-        {
-            i++;
-
-            if (argv[i] == nullptr || *argv[i] == 0)
-            {
-                std::cout << "invalid override_retry_check_interval value";
-                exit(1);
-            }
-            CHPCCNagiosToolSet::m_nRetryCheckInterval = atoi(argv[i]);
         }
         else if (stricmp(argv[i], "-override_flap_detection_enabled") == 0)
         {
@@ -867,9 +839,11 @@ int main(int argc, char *argv[])
             i++;
             strURL.set(argv[i]);
         }
-        else if(stricmp(argv[i], "set_catch_all_hostgroup") == 0)
+        else if(stricmp(argv[i], "-set_catch_all_hostgroup") == 0)
         {
-            // TODO: Create new host group
+            CHPCCNagiosToolSet::m_bGenerateCatchAllHostGroup = true;
+            CHPCCNagiosToolSet::m_CatchAllHostGroupName.set(argv[++i]);
+            CHPCCNagiosToolSet::m_CatchAllHostGroupAlias.set(argv[++i]);
         }
         else // KEEP AS THE LAST CONDITIONAL
         {
