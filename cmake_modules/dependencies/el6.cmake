@@ -1,0 +1,1 @@
+SET_DEPENDENCIES ( CPACK_RPM_PACKAGE_REQUIRES nagios3 nagios-plugins nrpe )
